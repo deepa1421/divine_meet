@@ -14,13 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      devotee_counter: {
+        Row: {
+          count: number
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          count?: number
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          count?: number
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mantra_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      mantra_engagements: {
+        Row: {
+          completion_count: number
+          created_at: string
+          day: string
+          email: string
+          id: string
+          mantra: string
+          name: string
+          prayer: string | null
+        }
+        Insert: {
+          completion_count: number
+          created_at?: string
+          day: string
+          email: string
+          id?: string
+          mantra: string
+          name: string
+          prayer?: string | null
+        }
+        Update: {
+          completion_count?: number
+          created_at?: string
+          day?: string
+          email?: string
+          id?: string
+          mantra?: string
+          name?: string
+          prayer?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_devotee_count: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
