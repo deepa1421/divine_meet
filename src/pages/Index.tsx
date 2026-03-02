@@ -11,9 +11,10 @@ export default function Index() {
   useEffect(() => {
     const base =
       day === 1 ? 84 :      // Monday Shiva
-      day === 2 ? 108 :     // Tuesday Hanuman
-      day === 3 ? 72 :      // Wednesday Gayatri
-      84;
+        day === 2 ? 108 :     // Tuesday Hanuman
+          day === 3 ? 72 :      // Wednesday Gayatri
+            day === 4 ? 150 :     // Thursday Ganesh
+              84;
 
     setDevoteeCount(base + Math.floor(Math.random() * 30));
 
@@ -30,27 +31,33 @@ export default function Index() {
   const mantraContent =
     day === 1
       ? {
-          title: "Pandit Ji ka Namaskar",
-          subtitle:
-            "Join the Maha Mrityunjay Jaap 108 times with our spiritual seekers",
-        }
+        title: "Pandit Ji ka Namaskar",
+        subtitle:
+          "Join the Maha Mrityunjay Jaap 108 times with our spiritual seekers",
+      }
       : day === 2
-      ? {
+        ? {
           title: "Pandit Ji ka Namaskar",
           subtitle:
             "Join the Hanuman Chalisa 108 times with our spiritual seekers",
         }
-      : day === 3
-      ? {
-          title: "Pandit Ji ka Namaskar",
-          subtitle:
-            "Join the Gayatri Mantra 108 times with our spiritual seekers",
-        }
-      : {
-          title: "Pandit Ji ka Namaskar",
-          subtitle:
-            "Join the Maha Mrityunjay Jaap 108 times with our spiritual seekers",
-        };
+        : day === 3
+          ? {
+            title: "Pandit Ji ka Namaskar",
+            subtitle:
+              "Join the Gayatri Mantra 108 times with our spiritual seekers",
+          }
+          : day === 4
+            ? {
+              title: "Pandit Ji ka Namaskar",
+              subtitle:
+                "Join the Shree Ganeshaaya Dheemahi satsang for Day 4",
+            }
+            : {
+              title: "Pandit Ji ka Namaskar",
+              subtitle:
+                "Join the Maha Mrityunjay Jaap 108 times with our spiritual seekers",
+            };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-temple-gradient px-4">

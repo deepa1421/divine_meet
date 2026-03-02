@@ -32,18 +32,30 @@ export default function MeetingRoom() {
           "उर्वारुकमिव बन्धनान्",
           "मृत्योर्मुक्षीय मामृतात्",
         ],
-         
+
       },
-      
+
     },
     2: {
       title: "🐒 Hanuman Chalisa (108 Times)",
       audio: "/audio/tuesday.mp3",
       image: "/images/hanuman.jpg",
       deity: "hanuman",
+      chantDuration: 40.0,
+      timings: [2.0, 10.0, 20.0, 30.0],
       subtitles: {
-        en: ["Shri Guru Charan Saroj Raj..."],
-        hi: ["श्रीगुरु चरण सरोज रज..."],
+        en: [
+          "Shri Guru Charan Saroj Raj",
+          "Nij Man Mukur Sudhari",
+          "Barnau Raghubar Bimal Jasu",
+          "Jo Dayaku Phal Chari",
+        ],
+        hi: [
+          "श्रीगुरु चरण सरोज रज",
+          "निज मनु मुकुरु सुधारि",
+          "बरनउँ रघुबर बिमल जसु",
+          "जो दायकु फल चारि",
+        ],
       },
     },
     3: {
@@ -51,15 +63,49 @@ export default function MeetingRoom() {
       audio: "/audio/wednesday.mp3",
       image: "/images/gayatri.jpg",
       deity: "gayatri",
+      chantDuration: 15.0,
+      timings: [2.0, 5.0, 8.0, 11.0],
       subtitles: {
-        en: ["Om Bhur Bhuvah Swaha"],
-        hi: ["ॐ भूर्भुवः स्वः"],
+        en: [
+          "Om Bhur Bhuvah Swaha",
+          "Tat Savitur Varenyam",
+          "Bhargo Devasya Dheemahi",
+          "Dhiyo Yo Nah Prachodayat",
+        ],
+        hi: [
+          "ॐ भूर्भुवः स्वः",
+          "तत्सवितुर्वरेण्यं",
+          "भर्गो देवस्य धीमहि",
+          "धियो यो नः प्रचोदयात्",
+        ],
+      },
+    },
+    4: {
+      title: "🐘 Ganesh Chaturthi Satsang (Day 4)",
+      audio: "/audio/thursday.mp3",
+      image: "/images/ganesh.jpg",
+      deity: "ganesh",
+      chantDuration: 25.0, // Estimated
+      timings: [2.0, 8.0, 14.0, 20.0],
+      subtitles: {
+        en: [
+          "Gan-nāyakāya gan-daivatāya Ganādhyakṣāya dhīmahi",
+          "Guṇa-śarīrāya guṇa-maṇḍitāya Guṇeśānāya dhīmahi",
+          "Vakra-tuṇḍāya dhūmra-ketave Ganādhyakṣāya dhīmahi",
+          "Ekadantāya vakra-tuṇḍāya Gaurī-tanayāya dhīmahi",
+        ],
+        hi: [
+          "गणनायकाय गणदैवताय गणाध्यक्षाय धीमहि।",
+          "गुणशरीराय गुणमण्डिताय गुणेशानाय धीमहि॥",
+          "वक्रतुण्डाय धूम्रकेतवे गणाध्यक्षाय धीमहि।",
+          "एकदन्ताय वक्रतुण्डाय गौरीतनयाय धीमहि।",
+        ],
       },
     },
   };
 
   const todayMantra = mantras[day] || mantras[1];
-  
+
 
   // 🔊 Autoplay Audio
   useEffect(() => {
@@ -81,40 +127,40 @@ export default function MeetingRoom() {
 
   // 🔥 Smooth Sync (No Lag)
   useEffect(() => {
-  let frame: number;
+    let frame: number;
 
-  const sync = () => {
-    const audio = audioRef.current;
+    const sync = () => {
+      const audio = audioRef.current;
 
-    if (!audio || !todayMantra.chantDuration || !todayMantra.timings) {
-      frame = requestAnimationFrame(sync);
-      return;
-    }
-
-    const currentTime = audio.currentTime;
-
-    const chantDuration = todayMantra.chantDuration;
-
-    const chantIndex = Math.floor(currentTime / chantDuration);
-    const timeInsideChant = currentTime % chantDuration;
-
-    let lineIndex = 0;
-
-    for (let i = 0; i < todayMantra.timings.length; i++) {
-      if (timeInsideChant >= todayMantra.timings[i]) {
-        lineIndex = i;
+      if (!audio || !todayMantra.chantDuration || !todayMantra.timings) {
+        frame = requestAnimationFrame(sync);
+        return;
       }
-    }
 
-    setChantCount(Math.min(chantIndex, 108));
-    setCurrentLine(lineIndex);
+      const currentTime = audio.currentTime;
+
+      const chantDuration = todayMantra.chantDuration;
+
+      const chantIndex = Math.floor(currentTime / chantDuration);
+      const timeInsideChant = currentTime % chantDuration;
+
+      let lineIndex = 0;
+
+      for (let i = 0; i < todayMantra.timings.length; i++) {
+        if (timeInsideChant >= todayMantra.timings[i]) {
+          lineIndex = i;
+        }
+      }
+
+      setChantCount(Math.min(chantIndex, 108));
+      setCurrentLine(lineIndex);
+
+      frame = requestAnimationFrame(sync);
+    };
 
     frame = requestAnimationFrame(sync);
-  };
-
-  frame = requestAnimationFrame(sync);
-  return () => cancelAnimationFrame(frame);
-}, [todayMantra]);
+    return () => cancelAnimationFrame(frame);
+  }, [todayMantra]);
   return (
     <div className="flex flex-col h-screen bg-background">
 
@@ -216,8 +262,8 @@ export default function MeetingRoom() {
         {/* Chat Sidebar */}
         {/* Chat Sidebar */}
         <div className="w-80 hidden md:flex flex-col">
-<ChatPanel deity={todayMantra.deity} />
-</div>
+          <ChatPanel deity={todayMantra.deity} />
+        </div>
       </div>
 
       {/* Hidden Audio */}
