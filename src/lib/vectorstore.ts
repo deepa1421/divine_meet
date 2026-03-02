@@ -79,7 +79,7 @@ export async function retrieveRelevantChunks(
     const cachedEmbeddings = _cachedEmbeddings!;
 
     // Query embed karo
-    const queryOutput = await embedder(query, { pooling: "mean", normalize: true });
+    const queryOutput = await embedder(query, { pooling: "mean", normalize: true } as any);
     const queryVec = Array.from(queryOutput.data) as number[];
 
     // Har chunk ke saath cosine similarity compute karo
@@ -154,7 +154,7 @@ async function _doInit(): Promise<void> {
             const output = await _embedder(chunk.content, {
                 pooling: "mean",
                 normalize: true,
-            });
+            } as any);
             embeddings.push(Array.from(output.data) as number[]);
         }
 
