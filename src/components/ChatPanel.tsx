@@ -274,20 +274,20 @@ export default function ChatPanel({ deity, externalMessages = [] }: ChatPanelPro
   const renderMessage = (msg: Message, showIntent: boolean) => (
     <div
       key={msg.id}
-      className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+      className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
     >
       <div
-        className={`max-w-[85%] rounded-xl px-3 py-2 text-sm shadow-sm ${msg.sender === "user"
-          ? "bg-primary text-primary-foreground rounded-br-none"
+        className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-lg backdrop-blur-md border ${msg.sender === "user"
+          ? "bg-primary text-primary-foreground rounded-br-none border-primary/20 shadow-[0_4px_12px_0_rgba(255,165,0,0.3)]"
           : msg.sender === "devotee"
-            ? "bg-muted text-foreground rounded-bl-none"
-            : "bg-secondary text-secondary-foreground rounded-bl-none border border-border"
+            ? "bg-white/5 text-foreground rounded-bl-none border-white/10"
+            : "bg-secondary/80 text-secondary-foreground rounded-bl-none border-white/20 shadow-[0_4px_12px_0_rgba(0,0,0,0.2)]"
           }`}
       >
         {/* Pandit Ji label — deity naam ke saath */}
         {msg.sender === "pandit" && (
           <span
-            className="text-xs font-semibold block mb-1"
+            className="text-[10px] font-black uppercase tracking-[0.15em] block mb-1.5 opacity-80"
             style={{ color: info.accentColor }}
           >
             {info.emoji} Pandit Ji — {info.name}
@@ -297,11 +297,11 @@ export default function ChatPanel({ deity, externalMessages = [] }: ChatPanelPro
         {/* Intent badge — sirf pandit tab replies mein dikhta hai */}
         {showIntent && msg.sender === "pandit" && msg.intent && (
           <span
-            className="text-[10px] font-medium rounded-full px-2 py-0.5 mb-1 inline-block"
+            className="text-[9px] font-black uppercase tracking-wider rounded-full px-2 py-0.5 mb-2 inline-block shadow-sm"
             style={{
-              background: `${INTENT_LABELS[msg.intent].color}22`,
+              background: `${INTENT_LABELS[msg.intent].color}33`,
               color: INTENT_LABELS[msg.intent].color,
-              border: `1px solid ${INTENT_LABELS[msg.intent].color}44`,
+              border: `1px solid ${INTENT_LABELS[msg.intent].color}66`,
             }}
           >
             {INTENT_LABELS[msg.intent].label}
@@ -311,7 +311,7 @@ export default function ChatPanel({ deity, externalMessages = [] }: ChatPanelPro
         {/* Devotee naam */}
         {msg.sender === "devotee" && msg.senderName && (
           <span
-            className="text-[11px] font-semibold block mb-0.5"
+            className="text-[10px] font-black uppercase tracking-widest block mb-1 opacity-70"
             style={{ color: info.accentColor }}
           >
             {msg.senderName}
@@ -319,10 +319,10 @@ export default function ChatPanel({ deity, externalMessages = [] }: ChatPanelPro
         )}
 
         {/* Message text */}
-        <span className="leading-relaxed whitespace-pre-wrap">{msg.text}</span>
+        <span className="leading-relaxed whitespace-pre-wrap font-medium">{msg.text}</span>
 
         {/* Timestamp — chhota aur subtle */}
-        <span className="text-[10px] opacity-40 block mt-1 text-right">
+        <span className="text-[9px] opacity-40 block mt-1.5 text-right font-bold uppercase tracking-tighter">
           {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </span>
       </div>
@@ -334,51 +334,58 @@ export default function ChatPanel({ deity, externalMessages = [] }: ChatPanelPro
      ────────────────────────────────────────── */
 
   return (
-    <div className="flex flex-col h-full bg-card border-l border-border">
+    <div className="flex flex-col h-full bg-black/40 backdrop-blur-3xl border-l border-white/5 shadow-2xl overflow-hidden relative">
+
+      {/* ── Background Subtle Glow ── */}
+      <div className="absolute inset-0 pointer-events-none opacity-20">
+        <div
+          className="absolute top-0 right-0 w-32 h-32 blur-[80px] rounded-full"
+          style={{ background: info.accentColor }}
+        />
+      </div>
 
       {/* ── Header ── */}
-      <div className="px-4 py-3 border-b border-border bg-card">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h3 className="font-semibold text-sm text-primary leading-tight">
-              {info.emoji} {info.name}
-            </h3>
-            <p className="text-[11px] text-muted-foreground">Live Satsang</p>
+      <div className="relative z-10 px-5 py-4 border-b border-white/5 bg-black/20">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-destructive animate-pulse shadow-[0_0_10px_0_rgba(239,68,68,0.5)]" />
+            <div>
+              <h3 className="font-display font-black text-xs tracking-[0.1em] text-primary uppercase">
+                {info.name}
+              </h3>
+              <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Satsang Live Stream</p>
+            </div>
           </div>
 
           {/* Online count badge */}
-          <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted rounded-full px-2 py-1">
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-pulse"
-              style={{ background: "#22c55e" }}
-            />
-            <Users size={11} />
-            <span>{onlineCount} online</span>
+          <span className="flex items-center gap-1.5 text-[10px] font-black tracking-widest text-white/50 bg-white/5 border border-white/10 rounded-full px-3 py-1 uppercase scale-90">
+            <Users size={10} />
+            <span>{onlineCount} JOINED</span>
           </span>
         </div>
 
         {/* ── Tab switcher ── */}
-        <div className="flex gap-1 bg-muted rounded-lg p-1">
+        <div className="flex gap-1.5 bg-black/40 border border-white/5 rounded-2xl p-1 shadow-inner">
           <button
             onClick={() => setActiveTab("comments")}
-            className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-medium rounded-md py-1.5 transition-all ${activeTab === "comments"
-              ? "bg-card text-primary shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+            className={`flex-1 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] rounded-xl py-2.5 transition-all duration-300 ${activeTab === "comments"
+              ? "bg-primary text-white shadow-[0_4px_12px_0_rgba(255,165,0,0.4)] scale-[1.02]"
+              : "text-white/40 hover:text-white/70"
               }`}
           >
-            <MessageCircle size={12} />
-            Comments
+            <MessageCircle size={13} />
+            COMMENTS
           </button>
 
           <button
             onClick={() => setActiveTab("pandit")}
-            className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-medium rounded-md py-1.5 transition-all ${activeTab === "pandit"
-              ? "bg-card text-primary shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+            className={`flex-1 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-[0.15em] rounded-xl py-2.5 transition-all duration-300 ${activeTab === "pandit"
+              ? "bg-primary text-white shadow-[0_4px_12px_0_rgba(255,165,0,0.4)] scale-[1.02]"
+              : "text-white/40 hover:text-white/70"
               }`}
           >
-            <BookOpen size={12} />
-            Pandit Ji
+            <BookOpen size={13} />
+            PANDIT JI
           </button>
         </div>
       </div>
@@ -388,32 +395,32 @@ export default function ChatPanel({ deity, externalMessages = [] }: ChatPanelPro
 
         /* ── Comments Tab ── */
         <>
-          <div ref={commentScrollRef} className="flex-1 overflow-y-auto p-3 space-y-2">
-            <div className="text-center text-[11px] text-muted-foreground py-1 px-2 bg-muted/50 rounded-lg">
-              💬 Public satsang comments — sabhi devotees yahan share kar sakte hain
+          <div ref={commentScrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10">
+            <div className="text-center text-[10px] font-black uppercase tracking-widest text-white/30 py-2 px-4 bg-white/5 rounded-xl border border-white/5 mb-4 italic">
+              ✨ Share your blessings with other devotees
             </div>
             {commentMessages.map((msg) => renderMessage(msg, false))}
           </div>
 
-          <div className="p-3 border-t border-border">
-            <div className="flex gap-2">
+          <div className="p-4 border-t border-white/5 bg-black/40 backdrop-blur-xl group">
+            <div className="flex gap-2 relative">
               <input
                 value={commentInput}
                 onChange={(e) => setCommentInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && postComment()}
-                placeholder={`${info.emoji} Share your blessings...`}
-                className="flex-1 bg-muted rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                placeholder={`${info.emoji} Blessings...`}
+                className="flex-1 bg-white/5 border border-white/5 rounded-2xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:bg-white/10 transition-all placeholder:text-white/20 placeholder:font-bold placeholder:uppercase placeholder:text-[10px] placeholder:tracking-widest"
               />
               <button
                 onClick={postComment}
                 disabled={!commentInput.trim()}
-                className="bg-primary text-primary-foreground p-2 rounded-lg disabled:opacity-40 transition-opacity"
+                className="bg-primary text-white p-3 rounded-2xl disabled:opacity-20 transition-all active:scale-95 shadow-[0_4px_12px_0_rgba(255,165,0,0.4)] hover:shadow-[0_4px_20px_0_rgba(255,165,0,0.6)]"
               >
-                <Send size={15} />
+                <Send size={18} />
               </button>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1 text-center">
-              Enter dabao ya button click karo to post
+            <p className="text-[9px] font-black uppercase tracking-tighter text-white/20 mt-2.5 text-center">
+              Tap enter to post your blessing 🙏
             </p>
           </div>
         </>
@@ -422,48 +429,52 @@ export default function ChatPanel({ deity, externalMessages = [] }: ChatPanelPro
 
         /* ── Pandit Ji Tab ── */
         <>
-          <div ref={panditScrollRef} className="flex-1 overflow-y-auto p-3 space-y-2">
-            <div className="text-center text-[11px] text-muted-foreground py-1 px-2 bg-muted/50 rounded-lg">
-              🛕 AI Pandit Ji se seedha baat karein — prashn, mantra, ya apni baat
+          <div ref={panditScrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10">
+            <div className="text-center text-[10px] font-black uppercase tracking-widest text-white/30 py-2 px-4 bg-white/5 rounded-xl border border-white/5 mb-4 italic">
+              🕉️ Spiritual Guidance powered by Pandit Ji
             </div>
             {panditMessages.map((msg) => renderMessage(msg, true))}
 
             {/* Typing indicator — LLM respond kar raha hai tab */}
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-secondary text-secondary-foreground rounded-xl rounded-bl-none px-4 py-2.5 text-sm flex items-center gap-2">
-                  <Loader2 size={13} className="animate-spin" />
-                  <span className="text-muted-foreground text-xs">
-                    Pandit Ji soch rahe hain...
+              <div className="flex justify-start animate-in fade-in duration-300">
+                <div className="bg-white/5 border border-white/10 rounded-2xl rounded-bl-none px-5 py-3 text-sm flex items-center gap-3 backdrop-blur-md shadow-xl">
+                  <div className="flex gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" />
+                  </div>
+                  <span className="text-white/40 text-[10px] font-black uppercase tracking-widest">
+                    Pandit Ji thinking...
                   </span>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="p-3 border-t border-border">
-            <div className="flex gap-2">
+          <div className="p-4 border-t border-white/5 bg-black/40 backdrop-blur-xl group">
+            <div className="flex gap-2 relative">
               <input
                 value={panditInput}
                 onChange={(e) => setPanditInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendToPandit()}
-                placeholder="Koi bhi prashn poochhen Pandit Ji se..."
+                placeholder="Ask Pandit Ji anything..."
                 disabled={isLoading}
-                className="flex-1 bg-muted rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-60"
+                className="flex-1 bg-white/5 border border-white/5 rounded-2xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:bg-white/10 transition-all placeholder:text-white/20 placeholder:font-bold placeholder:uppercase placeholder:text-[10px] placeholder:tracking-widest disabled:opacity-30"
               />
               <button
                 onClick={sendToPandit}
                 disabled={isLoading || !panditInput.trim()}
-                className="bg-primary text-primary-foreground p-2 rounded-lg disabled:opacity-40 transition-opacity"
+                className="bg-primary text-white p-3 rounded-2xl disabled:opacity-20 transition-all active:scale-95 shadow-[0_4px_12px_0_rgba(255,165,0,0.4)] hover:shadow-[0_4px_20px_0_rgba(255,165,0,0.6)]"
               >
                 {isLoading
-                  ? <Loader2 size={15} className="animate-spin" />
-                  : <Send size={15} />
+                  ? <Loader2 size={18} className="animate-spin" />
+                  : <Send size={18} />
                 }
               </button>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1 text-center">
-              🤖 AI-powered • Intent automatically detect hota hai
+            <p className="text-[9px] font-black uppercase tracking-tighter text-white/20 mt-2.5 text-center">
+              🤖 Divine AI • Intent automatically detected
             </p>
           </div>
         </>
