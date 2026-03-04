@@ -1,73 +1,88 @@
-# Welcome to your Lovable project
+📌 Divine GMeet
 
-## Project info
+A video conferencing application built to mimic key features of Google Meet (e.g., creating/joining meetings, real-time video chat) for learning or demo purposes.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+🧠 Overview
 
-## How can I edit this code?
+Divine GMeet is a project designed to help developers understand how video-meeting apps work under the hood. It includes core features like:
 
-There are several ways of editing your application.
+🔹 Create/Join Meeting Rooms
 
-**Use Lovable**
+🔹 Real-Time Video and Audio Calls
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+🔹 Basic UI for Participants
 
-Changes made via Lovable will be committed automatically to this repo.
+🔹 Unique Meeting Codes for Sharing
 
-**Use your preferred IDE**
+🔹 Cross-Platform Compatibility (Web / Mobile)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+(Adapt these bullet points based on what your project actually supports.)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+🚀 Features
+Feature	Status
+Create a Meeting	✅ Implemented
+Join with Meeting Code	✅ Implemented
+Video & Audio Streaming	⚙️ In Progress
+Text Chat	⚙️ Planned
+Screen Sharing	❌ Not Yet
+🧩 Tech Stack
 
-Follow these steps:
+List the technologies, languages, and frameworks used in the project:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Frontend: React / Flutter / Vue (replace with what you used)
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Backend: Node.js / Firebase / Socket.IO
 
-# Step 3: Install the necessary dependencies.
-npm i
+Real-Time APIs: WebRTC / Agora / Twilio
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+Database: Firestore / MongoDB / PostgreSQL
 
-**Edit a file directly in GitHub**
+🛠️ Installation
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Follow these steps to run the project locally:
 
-**Use GitHub Codespaces**
+Clone the repository
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+git clone https://github.com/USERNAME/divine-gmeet.git
 
-## What technologies are used for this project?
+Install dependencies
 
-This project is built with:
+npm install
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Start the development server
 
-## How can I deploy this project?
+npm start
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Open in browser at http://localhost:3000
 
-## Can I connect a custom domain to my Lovable project?
+(Adjust commands to match your project’s actual setup.)
 
-Yes, you can!
+📁 Project Structure
+/
+├── src/
+│   ├── components/
+│   ├── services/
+│   ├── assets/
+│   └── App.js
+├── public/
+├── package.json
+└── README.md
+🤝 Contribution
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Contributions are welcome! Please follow these steps:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Fork the repository
+
+Create a new branch
+
+Commit your changes
+
+Open a pull request
+
+📄 License
+
+This project is licensed under the Lovable License — feel free to modify and use! (Change to whichever license you prefer.)
+
+📬 Contact
+
+Have questions or feedback? Reach out on GitHub or email me.
