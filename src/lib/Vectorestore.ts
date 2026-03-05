@@ -3,6 +3,15 @@
 //
 // Pure browser-side RAG — koi backend nahi! 🚀
 //
+// Weekly Devotional Schedule:
+//   - Sunday: Surya Bhagwan Mantra (Gayatri)
+//   - Monday: Maha Mrityunjay Jaap (Shiva)
+//   - Tuesday: Hanuman Chalisa (Hanuman)
+//   - Wednesday: Ganesh Chaturthi Satsang (Ganesh)
+//   - Thursday: Guru Brihaspati Mantra (Ganesh)
+//   - Friday: Gayatri Mantra (Gayatri)
+//   - Saturday: Kalabhairav Ashtakam (Shiva)
+//
 // Kaise kaam karta hai:
 //   1. Transformers.js se multilingual embedding model load karo
 //      (paraphrase-multilingual-MiniLM-L12-v2 — ONNX format, ~45MB)
@@ -79,13 +88,13 @@ export async function initVectorstore(): Promise<void> {
  *   4. Top K results return karo (score ke saath)
  *
  * @param query  - User ka message
- * @param deity  - "hanuman" | "shiva" | "gayatri" | null (sab deities)
+ * @param deity  - string name | null (sab deities)
  * @param topK   - Kitne top results chahiye (default 3)
  * @returns Array of {chunk, score} objects sorted by relevance
  */
 export async function retrieveRelevantChunks(
   query: string,
-  deity: "hanuman" | "shiva" | "gayatri" | null = null,
+  deity: string | null = null,
   topK: number = 3,
 ): Promise<Array<{ chunk: KnowledgeChunk; score: number }>> {
 
@@ -106,8 +115,14 @@ export async function retrieveRelevantChunks(
   }));
 
   // Deity filter lagao (agar diya gaya hai)
-  const filtered = deity
-    ? scored.filter((s) => s.chunk.deity === deity)
+  // Mapping expanded types to base types in knowledgebase
+  const mappedDeity = deity === "surya" ? "gayatri"
+    : deity === "guru" ? "ganesh"
+      : deity === "kalabhairav" ? "shiva"
+        : deity;
+
+  const filtered = mappedDeity
+    ? scored.filter((s) => s.chunk.deity === mappedDeity)
     : scored;
 
   // Score ke hisaab se sort karo (highest first) aur top K lo

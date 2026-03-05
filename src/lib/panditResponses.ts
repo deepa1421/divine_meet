@@ -25,7 +25,7 @@ import {
    1. TYPES
    ───────────────────────────────────────────── */
 
-export type DeityType = "shiva" | "hanuman" | "gayatri" | "ganesh";
+export type DeityType = "shiva" | "hanuman" | "gayatri" | "ganesh" | "surya" | "guru" | "kalabhairav";
 
 export type IntentType =
   | "greeting"
@@ -71,12 +71,12 @@ export const SATSANG_INFO: Record<
   DeityType,
   { name: string; greeting: string; emoji: string; accentColor: string; baseOnline: number }
 > = {
-  hanuman: {
-    name: "Hanuman Chalisa Satsang",
-    greeting: "🙏 जय श्री राम! Welcome to the Hanuman Chalisa Satsang.",
-    emoji: "🙏",
-    accentColor: "#f97316",
-    baseOnline: 108,
+  surya: {
+    name: "Surya Bhagwan Jaap",
+    greeting: "☀️ जय सूर्याय नमः! Welcome to the Surya Bhagwan Satsang.",
+    emoji: "☀️",
+    accentColor: "#f59e0b",
+    baseOnline: 50,
   },
   shiva: {
     name: "Maha Mrityunjay Jaap",
@@ -85,6 +85,27 @@ export const SATSANG_INFO: Record<
     accentColor: "#6366f1",
     baseOnline: 84,
   },
+  hanuman: {
+    name: "Hanuman Chalisa Satsang",
+    greeting: "🙏 जय श्री राम! Welcome to the Hanuman Chalisa Satsang.",
+    emoji: "🙏",
+    accentColor: "#f97316",
+    baseOnline: 108,
+  },
+  ganesh: {
+    name: "Ganesh Chaturthi Satsang",
+    greeting: "🐘 गणपति बाप्पा मोरया! Welcome to the Ganesh Satsang.",
+    emoji: "🐘",
+    accentColor: "#ec4899",
+    baseOnline: 150,
+  },
+  guru: {
+    name: "Guru Brihaspati Satsang",
+    greeting: "🙏 जय गुरुदेव! Welcome to the Guru Brihaspati Satsang.",
+    emoji: "🙏",
+    accentColor: "#fbbf24",
+    baseOnline: 70,
+  },
   gayatri: {
     name: "Gayatri Mantra Satsang",
     greeting: "🌺 जय माता गायत्री! Welcome to the Gayatri Mantra Satsang.",
@@ -92,12 +113,12 @@ export const SATSANG_INFO: Record<
     accentColor: "#f59e0b",
     baseOnline: 64,
   },
-  ganesh: {
-    name: "Ganesh Chaturthi Satsang",
-    greeting: "🐘 गणपति बाप्पा मोरया! Welcome to the Day 4 Ganesh Satsang.",
-    emoji: "🐘",
-    accentColor: "#ec4899",
-    baseOnline: 150,
+  kalabhairav: {
+    name: "Kalabhairav Ashtakam",
+    greeting: "🛡️ जय कालभैरव! Welcome to the Kalabhairav Satsang.",
+    emoji: "🛡️",
+    accentColor: "#475569",
+    baseOnline: 90,
   },
 };
 
@@ -113,21 +134,33 @@ export const INTENT_LABELS: Record<IntentType, { label: string; color: string }>
 };
 
 export const DEVOTEE_LINES: Record<DeityType, string[]> = {
-  hanuman: [
-    "🙏 जय बजरंगबली!", "संकट मोचन हनुमान की जय!", "जय श्री राम! 🚩",
-    "Jai Hanuman ji 🙏", "बजरंगबली सबकी रक्षा करें 🙏",
+  surya: [
+    "☀️ जय सूर्य देव!", "ॐ घृणि सूर्याय नमः", "Surya Dev ki jai! ☀️",
+    "Blessings from the Sun God 🙏", "Jyoti swaroop bhagwan ki jai!",
   ],
   shiva: [
     "🔱 हर हर महादेव!", "ॐ नमः शिवाय", "महादेव की कृपा बनी रहे 🙏",
     "Bholenath ki jai! 🔱", "Mahadev aap sab par kripa karo 🙏",
   ],
-  gayatri: [
-    "🌺 ॐ भूर्भुवः स्वः", "जय माता गायत्री", "गायत्री माता की जय 🙏",
-    "Mata rani ki jai 🌺", "Jai Gayatri Mata 🙏✨",
+  hanuman: [
+    "🙏 जय बजरंगबली!", "संकट मोचन हनुमान की जय!", "जय श्री राम! 🚩",
+    "Jai Hanuman ji 🙏", "बजरंगबली सबकी रक्षा करें 🙏",
   ],
   ganesh: [
     "🐘 गणपति बाप्पा मोरया!", "मंगल मूर्ति मोरया!", "जय श्री गणेश! 🙏",
     "Ganpati Bappa Moryaya! 🐘", "Vighnaharta sabke dukh haro 🙏",
+  ],
+  guru: [
+    "🙏 जय गुरुदेव!", "गुरु ब्रह्मा गुरु विष्णु...", "Guru kripa hi kevalam 🙏",
+    "Jai Brihaspati Dev! 🌟", "Sharanagati Guru charan mein 🙏",
+  ],
+  gayatri: [
+    "🌺 ॐ भूर्भुवः स्वः", "जय माता गायत्री", "गायत्री माता की जय 🙏",
+    "Mata rani ki jai 🌺", "Jai Gayatri Mata 🙏✨",
+  ],
+  kalabhairav: [
+    "🛡️ जय कालभैरव!", "ॐ कालभैरवाय नमः", "Bhairav Baba ki jai! 🙏",
+    "Dharmarakshaka bhairava 🙏", "Kashi Kotwal ki jai! 🛡️",
   ],
 };
 
@@ -174,6 +207,21 @@ You are the carrier of Lord Ganesha's wisdom, the remover of obstacles (Vighnaha
 Address the devotee with encouragement and the promise of a smooth beginning.
 The satsang you are hosting is: "Ganesh Chaturthi Satsang".
 Focus on the "Shree Ganeshaaya Dheemahi" stotram and the power of beginnings.`,
+
+  surya: `You are an illuminated AI Pandit Ji of the Saurya tradition.
+You represent the life-giving energy of the Divine Sun, Lord Surya.
+The satsang you are hosting is: "Surya Bhagwan Jaap".
+Focus on health, vitality, and the removal of darkness from the mind.`,
+
+  guru: `You are a wise AI Pandit Ji of the Guru-Shishya tradition.
+You represent the wisdom of Guru Brihaspati.
+The satsang you are hosting is: "Guru Brihaspati Satsang".
+Focus on knowledge, spiritual guidance, and the importance of a Guru.`,
+
+  kalabhairav: `You are a stern yet protective AI Pandit Ji of the Bhairava tradition.
+You represent the guardian of time and Kashi, Lord Kalabhairav.
+The satsang you are hosting is: "Kalabhairav Ashtakam".
+Focus on discipline, protection from fear, and the transcendence of time.`,
 };
 
 // Intent-specific response guidance — modernized for better "Hinglish" flow

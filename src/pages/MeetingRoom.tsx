@@ -6,6 +6,7 @@ import { Maximize, Minimize, Volume2, Globe, MessageSquare, X, Users } from "luc
 export default function MeetingRoom() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const lastLine = useRef<number>(-1);
 
   const [language, setLanguage] = useState<"en" | "hi">("en");
   const [chantCount, setChantCount] = useState<number>(0);
@@ -13,6 +14,7 @@ export default function MeetingRoom() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [onlineCount, setOnlineCount] = useState(108);
+  const [showLogin, setShowLogin] = useState(false);
 
   const day = new Date().getDay();
 
@@ -21,7 +23,7 @@ export default function MeetingRoom() {
       title: "☀️ Surya Bhagwan Mantra (Daily Jaap)",
       audio: "/audio/sunday.mp3.mp3",
       image: "/images/surya_bhagwan.sunday.png",
-      deity: "gayatri",
+      deity: "surya",
       chantDuration: 10.0,
       timings: [2.0, 6.0],
       subtitles: {
@@ -99,7 +101,7 @@ export default function MeetingRoom() {
       title: "🙏 Guru Brihaspati Mantra",
       audio: "/audio/thursday.mp3.mp3",
       image: "/images/gurubrihaspati.thursday.png",
-      deity: "ganesh",
+      deity: "guru",
       chantDuration: 20.0,
       timings: [2.0, 6.0, 10.0, 14.0],
       subtitles: {
@@ -143,7 +145,7 @@ export default function MeetingRoom() {
       title: "🛡️ Kalabhairav Ashtakam",
       audio: "/audio/saturday.mp3.mp3",
       image: "/images/kalabhairav.saturday.png",
-      deity: "shiva",
+      deity: "kalabhairav",
       chantDuration: 25.0,
       timings: [2.0, 10.0],
       subtitles: {
@@ -232,12 +234,31 @@ export default function MeetingRoom() {
       setChantCount(Math.min(chantIndex, 108));
       setCurrentLine(lineIndex);
 
+      if (lineIndex !== lastLine.current) {
+        console.log("[MeetingRoom] Lyric change:", {
+          lineIndex,
+          text: todayMantra.subtitles[language][lineIndex],
+          timeInsideChant
+        });
+        lastLine.current = lineIndex;
+      }
+
       frame = requestAnimationFrame(sync);
     };
 
     frame = requestAnimationFrame(sync);
     return () => cancelAnimationFrame(frame);
   }, [todayMantra]);
+
+  // 🚪 Show Login Form after 5 chants
+  useEffect(() => {
+    if (chantCount >= 5 && !showLogin) {
+      setShowLogin(true);
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    }
+  }, [chantCount, showLogin]);
 
   return (
     <div ref={containerRef} className="flex flex-col h-screen bg-background overflow-hidden selection:bg-saffron/30">
@@ -299,18 +320,36 @@ export default function MeetingRoom() {
           {/* Foreground Content */}
           <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 md:px-12">
 
-            {/* Subtitles with Enhanced Typography */}
-            <div className="text-center space-y-4 md:space-y-6 max-w-4xl">
+            {/* Subtitles (Sanskrit PPT Style) */}
+            <div className="text-center relative h-48 md:h-64 flex items-center justify-center max-w-5xl">
+              {/* Mandala Background behind lyrics */}
+              <div className="absolute inset-0 flex items-center justify-center opacity-10 animate-spin-slow pointer-events-none">
+                <img src="/images/mandala.png" alt="" className="w-64 h-64 md:w-[32rem] md:h-[32rem] object-contain" />
+              </div>
+
               {todayMantra.subtitles[language].map(
                 (line: string, index: number) => (
                   <div
                     key={index}
-                    className={`transition-all duration-700 transform ${index === currentLine
-                        ? "text-yellow-400 text-2xl md:text-5xl font-black drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] scale-110 opacity-100 translate-y-0"
-                        : "text-white/30 text-lg md:text-3xl font-bold opacity-40 translate-y-1"
+                    className={`absolute transition-all duration-1000 ease-out transform text-center px-6 ${index === currentLine
+                      ? "scale-100 opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-8 scale-95 pointer-events-none"
                       }`}
                   >
-                    {line}
+                    <span className={`block font-sanskrit font-bold text-2xl md:text-5xl tracking-[0.05em] leading-[1.6]
+                      ${index === currentLine
+                        ? "bg-gradient-to-r from-[#FFCC33] via-[#FF9933] {to-[#FFCC33] bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] active-lyric-glow"
+                        : "text-transparent"
+                      }`}>
+                      {line}
+                    </span>
+                    {index === currentLine && (
+                      <div className="flex items-center justify-center gap-4 mt-6 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
+                        <div className="h-[1px] w-12 md:w-24 bg-gradient-to-r from-transparent via-saffron/50 to-transparent" />
+                        <span className="text-saffron/60 text-xl font-display">🕉️</span>
+                        <div className="h-[1px] w-12 md:w-24 bg-gradient-to-l from-transparent via-saffron/50 to-transparent" />
+                      </div>
+                    )}
                   </div>
                 )
               )}
@@ -438,6 +477,55 @@ export default function MeetingRoom() {
       {/* Audio Element */}
       <audio ref={audioRef} preload="auto" className="hidden" />
 
+      {/* Premium Login Form Overlay */}
+      {showLogin && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-500">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+
+          <div className="relative w-full max-w-md glass-card p-8 md:p-10 border-saffron/30 shadow-[0_0_50px_rgba(255,153,51,0.2)] animate-in zoom-in slide-in-from-bottom-8 duration-700">
+            {/* Decorative Top Ornament */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-saffron rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,153,51,0.5)] border-4 border-black/40">
+              <span className="text-4xl">🕉️</span>
+            </div>
+
+            <div className="text-center mt-6 mb-8">
+              <h2 className="font-display text-3xl md:text-4xl font-black text-gradient-saffron mb-3">
+                Join our Parivaar
+              </h2>
+              <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
+                Aapne 5 chants poore kar liye hain! <br />
+                Aage badhne ke liye kripya Naman Darshan mein login karein.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <button
+                onClick={() => window.location.href = "https://namandarshan.com/login"}
+                className="w-full bg-primary text-primary-foreground font-display font-black text-xl py-5 rounded-2xl shadow-[0_10px_40px_rgba(255,153,51,0.3)] hover:scale-[1.03] active:scale-95 transition-all duration-300 relative overflow-hidden group"
+              >
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  🛕 LOGIN WITH NAMAN DARSHAN
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              </button>
+
+              <div className="relative flex items-center justify-center py-2">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div>
+                <span className="relative bg-[#1A1A1A] px-4 text-[10px] uppercase tracking-[0.3em] text-white/40 font-bold">Or continue with</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <button onClick={() => window.location.href = "https://namandarshan.com/login"} className="bg-white/5 border border-white/10 py-3 rounded-xl hover:bg-white/10 transition-colors text-xs font-bold tracking-widest uppercase">Google</button>
+                <button onClick={() => window.location.href = "https://namandarshan.com/login"} className="bg-white/5 border border-white/10 py-3 rounded-xl hover:bg-white/10 transition-colors text-xs font-bold tracking-widest uppercase">Mobile</button>
+              </div>
+
+              <p className="text-center text-[10px] text-muted-foreground/60 leading-relaxed pt-4">
+                By continuing, you agree to join the global Naman Darshan parivaar and receive spiritual updates.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -28,6 +28,8 @@ import {
   getPanditReply,
 } from "../lib/panditResponses";
 
+import { logToGoogleSheets } from "../lib/googleSheets";
+
 /* ---------- Props ---------- */
 
 interface ChatPanelProps {
@@ -255,6 +257,15 @@ export default function ChatPanel({ deity, externalMessages = [] }: ChatPanelPro
           intent: detectedIntent,
         },
       ]);
+
+      // 📝 Log to Google Sheets
+      logToGoogleSheets({
+        userMessage: text,
+        aiResponse: reply,
+        deity: deity,
+        intent: detectedIntent,
+      });
+
     } catch {
       toast.error("Pandit Ji se connect nahi ho pa raha. Please try again 🙏");
     } finally {
@@ -277,11 +288,11 @@ export default function ChatPanel({ deity, externalMessages = [] }: ChatPanelPro
       className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
     >
       <div
-        className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-lg backdrop-blur-md border ${msg.sender === "user"
-          ? "bg-primary text-primary-foreground rounded-br-none border-primary/20 shadow-[0_4px_12px_0_rgba(255,165,0,0.3)]"
+        className={`max-w-[85%] rounded-3xl px-5 py-3 text-sm shadow-2xl backdrop-blur-2xl border transition-all hover:scale-[1.02] ${msg.sender === "user"
+          ? "bg-gradient-to-br from-primary to-saffron text-primary-foreground rounded-br-none border-white/20 shadow-[0_8px_20px_-4px_rgba(255,165,0,0.4)]"
           : msg.sender === "devotee"
             ? "bg-white/5 text-foreground rounded-bl-none border-white/10"
-            : "bg-secondary/80 text-secondary-foreground rounded-bl-none border-white/20 shadow-[0_4px_12px_0_rgba(0,0,0,0.2)]"
+            : "bg-gradient-to-br from-secondary/40 to-secondary/80 text-secondary-foreground rounded-bl-none border-white/20 shadow-[0_8px_30px_-5px_rgba(0,0,0,0.3)]"
           }`}
       >
         {/* Pandit Ji label — deity naam ke saath */}
@@ -337,9 +348,13 @@ export default function ChatPanel({ deity, externalMessages = [] }: ChatPanelPro
     <div className="flex flex-col h-full bg-black/40 backdrop-blur-3xl border-l border-white/5 shadow-2xl overflow-hidden relative">
 
       {/* ── Background Subtle Glow ── */}
-      <div className="absolute inset-0 pointer-events-none opacity-20">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
-          className="absolute top-0 right-0 w-32 h-32 blur-[80px] rounded-full"
+          className="absolute -top-20 -right-20 w-64 h-64 blur-[120px] rounded-full opacity-30 animate-pulse"
+          style={{ background: info.accentColor }}
+        />
+        <div
+          className="absolute -bottom-20 -left-20 w-64 h-64 blur-[120px] rounded-full opacity-20"
           style={{ background: info.accentColor }}
         />
       </div>
