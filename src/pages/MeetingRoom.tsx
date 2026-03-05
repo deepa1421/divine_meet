@@ -15,6 +15,7 @@ export default function MeetingRoom() {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [onlineCount, setOnlineCount] = useState(108);
   const [showLogin, setShowLogin] = useState(false);
+  const [isChatMinimized, setIsChatMinimized] = useState(false);
 
   const day = new Date().getDay();
 
@@ -25,7 +26,7 @@ export default function MeetingRoom() {
       image: "/images/surya_bhagwan.sunday.png",
       deity: "surya",
       chantDuration: 10.0,
-      timings: [[2.0, 5.8], [6.0, 9.8]],
+      timings: [[2.2, 5.5], [6.2, 9.5]],
       subtitles: {
         en: ["Om Ghrini Suriyaya Namaha", "Om Hrim Srim Suriyaya Namaha"],
         hi: ["ॐ घृणि सूर्याय नमः", "ॐ ह्रीं श्रीं सूर्याय नमः"],
@@ -37,7 +38,7 @@ export default function MeetingRoom() {
       image: "/images/lordshiva.monday.jpg",
       deity: "shiva",
       chantDuration: 20.6,
-      timings: [[3.0, 6.8], [7.0, 9.6], [9.8, 12.4], [12.6, 20.2]],
+      timings: [[3.2, 6.5], [7.2, 9.4], [10.0, 12.4], [12.8, 19.8]],
       subtitles: {
         en: [
           "Om Tryambakam Yajamahe",
@@ -59,7 +60,7 @@ export default function MeetingRoom() {
       image: "/images/hanumanji.tuesday.jpg",
       deity: "hanuman",
       chantDuration: 40.0,
-      timings: [[2.0, 9.5], [10.0, 19.5], [20.0, 29.5], [30.5, 39.5]],
+      timings: [[2.2, 9.2], [10.2, 19.2], [20.2, 29.2], [30.7, 39.2]],
       subtitles: {
         en: [
           "Shri Guru Charan Saroj Raj",
@@ -81,7 +82,7 @@ export default function MeetingRoom() {
       image: "/images/lordganesh.wednesday.jpg",
       deity: "ganesh",
       chantDuration: 25.0,
-      timings: [[2.0, 7.8], [8.0, 13.8], [14.0, 19.8], [20.5, 24.8]],
+      timings: [[2.2, 7.5], [8.2, 13.5], [14.2, 19.5], [20.7, 24.5]],
       subtitles: {
         en: [
           "Gan-nāyakāya gan-daivatāya Ganādhyakṣāya dhīmahi",
@@ -103,7 +104,7 @@ export default function MeetingRoom() {
       image: "/images/gurubrihaspati.thursday.png",
       deity: "guru",
       chantDuration: 20.0,
-      timings: [[2.0, 5.8], [6.0, 9.8], [10.0, 13.8], [14.0, 19.8]],
+      timings: [[2.2, 5.5], [6.2, 9.5], [10.2, 13.5], [14.2, 19.5]],
       subtitles: {
         en: [
           "Gurur Brahma Gurur Vishnu",
@@ -125,7 +126,7 @@ export default function MeetingRoom() {
       image: "/images/gayatrimata.friday.jpg",
       deity: "gayatri",
       chantDuration: 15.0,
-      timings: [[2.0, 4.8], [5.0, 7.8], [8.0, 10.8], [11.0, 14.8]],
+      timings: [[2.2, 4.5], [5.2, 7.5], [8.2, 10.5], [11.2, 14.5]],
       subtitles: {
         en: [
           "Om Bhur Bhuvah Swaha",
@@ -147,7 +148,7 @@ export default function MeetingRoom() {
       image: "/images/kalabhairav.saturday.png",
       deity: "kalabhairav",
       chantDuration: 25.0,
-      timings: [[2.0, 9.8], [10.5, 20.5]],
+      timings: [[2.2, 9.5], [10.7, 20.2]],
       subtitles: {
         en: [
           "Deva-Raja-Sevyamana-Pavanamghri-Pankajam",
@@ -294,11 +295,11 @@ export default function MeetingRoom() {
             LIVE
           </span>
           <button
-            onClick={toggleFullscreen}
-            className="p-2 hover:bg-white/10 rounded-xl transition-all hidden md:block border border-white/5"
-            title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+            onClick={() => setIsChatMinimized(!isChatMinimized)}
+            className={`p-2 rounded-xl transition-all hidden md:block border ${isChatMinimized ? "bg-primary text-white border-primary shadow-[0_0_15px_rgba(255,165,0,0.4)]" : "hover:bg-white/10 border-white/5"}`}
+            title={isChatMinimized ? "Show Chat" : "Maximize view (Hide Chat)"}
           >
-            {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+            {isChatMinimized ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
           </button>
         </div>
       </div>
@@ -333,9 +334,9 @@ export default function MeetingRoom() {
                 (line: string, index: number) => (
                   <div
                     key={index}
-                    className={`absolute transition-all duration-1000 ease-out transform text-center px-6 ${index === currentLine
+                    className={`absolute transition-all duration-300 ease-out transform text-center px-6 ${index === currentLine
                       ? "scale-100 opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-8 scale-95 pointer-events-none"
+                      : "opacity-0 translate-y-4 scale-95 pointer-events-none"
                       }`}
                   >
                     <span className={`block font-sanskrit font-bold text-2xl md:text-5xl tracking-[0.05em] leading-[1.6]
@@ -450,9 +451,11 @@ export default function MeetingRoom() {
         </div>
 
         {/* Chat Sidebar (Desktop) - Improved UI */}
-        <div className="w-[22rem] hidden lg:flex flex-col border-l border-white/5 relative bg-black/20 backdrop-blur-3xl">
-          <ChatPanel deity={todayMantra.deity} />
-        </div>
+        {!isChatMinimized && (
+          <div className="w-[22rem] hidden lg:flex flex-col border-l border-white/5 relative bg-black/20 backdrop-blur-3xl animate-in slide-in-from-right duration-500">
+            <ChatPanel deity={todayMantra.deity} />
+          </div>
+        )}
 
         {/* Mobile Chat Overlay */}
         {isChatOpen && (
