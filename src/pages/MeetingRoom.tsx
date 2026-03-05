@@ -16,6 +16,7 @@ export default function MeetingRoom() {
   const [onlineCount, setOnlineCount] = useState(108);
   const [showLogin, setShowLogin] = useState(false);
   const [isChatMinimized, setIsChatMinimized] = useState(false);
+  const [isStarted, setIsStarted] = useState(false);
 
   const day = new Date().getDay();
 
@@ -193,20 +194,16 @@ export default function MeetingRoom() {
   // 🔊 Autoplay Audio
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !isStarted) return;
 
     audio.src = todayMantra.audio;
     audio.load();
     audio.volume = 1;
 
-    audio.play().catch(() => {
-      const resume = () => {
-        audio.play();
-        document.removeEventListener("click", resume);
-      };
-      document.addEventListener("click", resume);
+    audio.play().catch((err) => {
+      console.error("Audio playback failed:", err);
     });
-  }, [todayMantra.audio]);
+  }, [todayMantra.audio, isStarted]);
 
   // 🔥 Smooth Sync (No Lag)
   useEffect(() => {
@@ -323,39 +320,31 @@ export default function MeetingRoom() {
           {/* Foreground Content */}
           <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 md:px-12">
 
-            {/* Subtitles (Sanskrit PPT Style) */}
-            <div className="text-center relative h-48 md:h-64 flex items-center justify-center max-w-5xl">
-              {/* Mandala Background behind lyrics */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-10 animate-spin-slow pointer-events-none">
-                <img src="/images/mandala.png" alt="" className="w-64 h-64 md:w-[32rem] md:h-[32rem] object-contain" />
-              </div>
-
-              {todayMantra.subtitles[language].map(
-                (line: string, index: number) => (
-                  <div
-                    key={index}
-                    className={`absolute transition-all duration-300 ease-out transform text-center px-6 ${index === currentLine
-                      ? "scale-100 opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-4 scale-95 pointer-events-none"
-                      }`}
-                  >
-                    <span className={`block font-sanskrit font-bold text-2xl md:text-5xl tracking-[0.05em] leading-[1.6]
-                      ${index === currentLine
-                        ? "bg-gradient-to-r from-[#FFCC33] via-[#FF9933] {to-[#FFCC33] bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] active-lyric-glow"
-                        : "text-transparent"
-                      }`}>
-                      {line}
+            {/* Cinematic Subtitles (Movie Style) */}
+            <div className="absolute bottom-32 left-0 right-0 z-20 flex flex-col items-center justify-center px-6 pointer-events-none">
+              {currentLine !== -1 && (
+                <div
+                  key={currentLine}
+                  className="animate-in fade-in slide-in-from-bottom-2 duration-300 text-center max-w-4xl"
+                >
+                  <span className="inline-block font-sanskrit font-bold text-3xl md:text-5xl tracking-wide leading-tight text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] px-8 py-2 rounded-2xl bg-black/30 backdrop-blur-sm border border-white/5">
+                    <span className="bg-gradient-to-b from-temple-gold via-saffron to-saffron bg-clip-text text-transparent">
+                      {todayMantra.subtitles[language][currentLine]}
                     </span>
-                    {index === currentLine && (
-                      <div className="flex items-center justify-center gap-4 mt-6 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
-                        <div className="h-[1px] w-12 md:w-24 bg-gradient-to-r from-transparent via-saffron/50 to-transparent" />
-                        <span className="text-saffron/60 text-xl font-display">🕉️</span>
-                        <div className="h-[1px] w-12 md:w-24 bg-gradient-to-l from-transparent via-saffron/50 to-transparent" />
-                      </div>
-                    )}
+                  </span>
+
+                  <div className="flex items-center justify-center gap-3 mt-4 opacity-40">
+                    <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-saffron" />
+                    <span className="text-saffron text-sm">🕉️</span>
+                    <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-saffron" />
                   </div>
-                )
+                </div>
               )}
+            </div>
+
+            {/* Ambient Background Mandala */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-5 animate-spin-slow pointer-events-none overflow-hidden">
+              <img src="/images/mandala.png" alt="" className="w-[40rem] h-[40rem] rotate-45" />
             </div>
 
             {/* Chant Counting Ring/Capsule */}
@@ -528,6 +517,23 @@ export default function MeetingRoom() {
                 By continuing, you agree to join the global Naman Darshan parivaar and receive spiritual updates.
               </p>
             </div>
+          </div>
+        </div>
+      {/* Start Session Overlay (Audio Unblocker) */}
+      {!isStarted && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-3xl animate-in fade-in duration-700">
+          <div className="text-center p-8 max-w-lg">
+            <div className="w-32 h-32 bg-saffron/20 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-saffron animate-pulse">
+              <span className="text-6xl">🕉️</span>
+            </div>
+            <h2 className="font-display text-4xl font-black text-white mb-4 tracking-tight">Ready for Satsang?</h2>
+            <p className="text-white/60 mb-10 leading-relaxed font-medium">Click below to start the spiritual journey and enable the divine audio experience.</p>
+            <button
+              onClick={() => setIsStarted(true)}
+              className="px-12 py-5 bg-saffron text-white font-display font-black text-xl rounded-2xl shadow-[0_10px_40px_rgba(255,153,51,0.4)] hover:scale-105 active:scale-95 transition-all duration-300"
+            >
+              START SPIRITUAL SESSION
+            </button>
           </div>
         </div>
       )}
