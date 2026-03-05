@@ -25,7 +25,7 @@ export default function MeetingRoom() {
       image: "/images/surya_bhagwan.sunday.png",
       deity: "surya",
       chantDuration: 10.0,
-      timings: [2.0, 6.0],
+      timings: [[2.0, 5.8], [6.0, 9.8]],
       subtitles: {
         en: ["Om Ghrini Suriyaya Namaha", "Om Hrim Srim Suriyaya Namaha"],
         hi: ["ॐ घृणि सूर्याय नमः", "ॐ ह्रीं श्रीं सूर्याय नमः"],
@@ -37,7 +37,7 @@ export default function MeetingRoom() {
       image: "/images/lordshiva.monday.jpg",
       deity: "shiva",
       chantDuration: 20.6,
-      timings: [3.0, 7.0, 9.8, 12.6],
+      timings: [[3.0, 6.8], [7.0, 9.6], [9.8, 12.4], [12.6, 20.2]],
       subtitles: {
         en: [
           "Om Tryambakam Yajamahe",
@@ -59,7 +59,7 @@ export default function MeetingRoom() {
       image: "/images/hanumanji.tuesday.jpg",
       deity: "hanuman",
       chantDuration: 40.0,
-      timings: [2.0, 10.0, 20.0, 30.0],
+      timings: [[2.0, 9.5], [10.0, 19.5], [20.0, 29.5], [30.5, 39.5]],
       subtitles: {
         en: [
           "Shri Guru Charan Saroj Raj",
@@ -81,7 +81,7 @@ export default function MeetingRoom() {
       image: "/images/lordganesh.wednesday.jpg",
       deity: "ganesh",
       chantDuration: 25.0,
-      timings: [2.0, 8.0, 14.0, 20.0],
+      timings: [[2.0, 7.8], [8.0, 13.8], [14.0, 19.8], [20.5, 24.8]],
       subtitles: {
         en: [
           "Gan-nāyakāya gan-daivatāya Ganādhyakṣāya dhīmahi",
@@ -103,7 +103,7 @@ export default function MeetingRoom() {
       image: "/images/gurubrihaspati.thursday.png",
       deity: "guru",
       chantDuration: 20.0,
-      timings: [2.0, 6.0, 10.0, 14.0],
+      timings: [[2.0, 5.8], [6.0, 9.8], [10.0, 13.8], [14.0, 19.8]],
       subtitles: {
         en: [
           "Gurur Brahma Gurur Vishnu",
@@ -125,7 +125,7 @@ export default function MeetingRoom() {
       image: "/images/gayatrimata.friday.jpg",
       deity: "gayatri",
       chantDuration: 15.0,
-      timings: [2.0, 5.0, 8.0, 11.0],
+      timings: [[2.0, 4.8], [5.0, 7.8], [8.0, 10.8], [11.0, 14.8]],
       subtitles: {
         en: [
           "Om Bhur Bhuvah Swaha",
@@ -147,7 +147,7 @@ export default function MeetingRoom() {
       image: "/images/kalabhairav.saturday.png",
       deity: "kalabhairav",
       chantDuration: 25.0,
-      timings: [2.0, 10.0],
+      timings: [[2.0, 9.8], [10.5, 20.5]],
       subtitles: {
         en: [
           "Deva-Raja-Sevyamana-Pavanamghri-Pankajam",
@@ -224,17 +224,19 @@ export default function MeetingRoom() {
       const chantIndex = Math.floor(currentTime / chantDuration);
       const timeInsideChant = currentTime % chantDuration;
 
-      let lineIndex = 0;
+      let lineIndex = -1;
       for (let i = 0; i < todayMantra.timings.length; i++) {
-        if (timeInsideChant >= todayMantra.timings[i]) {
+        const [start, end] = todayMantra.timings[i];
+        if (timeInsideChant >= start && timeInsideChant <= end) {
           lineIndex = i;
+          break;
         }
       }
 
       setChantCount(Math.min(chantIndex, 108));
       setCurrentLine(lineIndex);
 
-      if (lineIndex !== lastLine.current) {
+      if (lineIndex !== lastLine.current && lineIndex !== -1) {
         console.log("[MeetingRoom] Lyric change:", {
           lineIndex,
           text: todayMantra.subtitles[language][lineIndex],
