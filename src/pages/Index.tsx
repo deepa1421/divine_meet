@@ -116,12 +116,8 @@ export default function Index() {
               {devoteeCount} DEVOTEES CHANTING
             </span>
           </div>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-bold">
-            Live Streamed from Varansi & Haridwar
-          </p>
         </div>
       </div>
-
     </div>
   );
 }
