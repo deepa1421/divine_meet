@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import namanlogo from "@/assets/naman-logo.webp";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -76,9 +77,18 @@ export default function Index() {
 
       <div className="relative z-10 flex flex-col items-center w-full max-w-2xl px-8 py-12 glass-card text-center animate-in fade-in zoom-in duration-700">
 
-        {/* Floating Icon */}
-        <div className="text-7xl animate-float-slow mb-8 select-none drop-shadow-[0_0_25px_rgba(255,165,0,0.5)]">
-          🙏
+        {/* Floating Icon - Medium Size */}
+        <div className="relative mb-10 group">
+          {/* Layered Glow Effect behind the logo */}
+          <div className="absolute inset-0 blur-3xl bg-orange-500/20 rounded-full scale-150 animate-pulse pointer-events-none" />
+
+          <div className="relative animate-float-slow select-none transition-transform duration-500 group-hover:scale-110">
+            <img
+              src={namanlogo}
+              alt="namanlogo"
+              className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-[0_0_30px_rgba(255,165,0,0.6)]"
+            />
+          </div>
         </div>
 
         {/* Dynamic Title */}

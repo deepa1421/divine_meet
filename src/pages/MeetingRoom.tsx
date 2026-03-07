@@ -1,56 +1,23 @@
 import { useEffect, useRef, useState } from "react";
 import namanLogo from "@/assets/naman-logo.webp";
 import ChatPanel from "@/components/ChatPanel";
-import { Maximize, Minimize, Volume2, Globe, MessageSquare, X, Users, Clock } from "lucide-react";
+import { Maximize, Minimize, Volume2, Globe, MessageSquare, X, Users } from "lucide-react";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-// Morning: 6:00 AM – 8:00 AM  |  Evening: 6:00 PM – 8:00 PM
-function getSessionState() {
-  const now = new Date();
-  const s = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-  const todayDay = now.getDay();
-  const tomorrowDay = (todayDay + 1) % 7;
-
-  if (s >= 6 * 3600 && s < 8 * 3600)
-    return { live: true as const, session: "morning", elapsed: s - 6 * 3600 };
-  if (s >= 18 * 3600 && s < 20 * 3600)
-    return { live: true as const, session: "evening", elapsed: s - 18 * 3600 };
-
-  if (s < 6 * 3600)
-    return { live: false as const, secondsToNext: 6 * 3600 - s, nextLabel: "Morning Aarti (6:00 AM)", nextDay: todayDay };
-  if (s < 18 * 3600)
-    return { live: false as const, secondsToNext: 18 * 3600 - s, nextLabel: "Evening Aarti (6:00 PM)", nextDay: todayDay };
-  return { live: false as const, secondsToNext: 86400 - s + 6 * 3600, nextLabel: "Morning Aarti (6:00 AM)", nextDay: tomorrowDay };
-}
-
-function fmtTime(secs: number) {
-  const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60), s = secs % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function MeetingRoom() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const lastLine = useRef<number>(-1);
-  const sessionRef = useRef<string>("");      // "0-morning" | "0-evening" etc.
-  const loginShown = useRef<boolean>(false);  // show login only once per page load
 
   const [language, setLanguage] = useState<"en" | "hi">("en");
   const [chantCount, setChantCount] = useState<number>(0);
-  const [currentLine, setCurrentLine] = useState<number>(-1);
+  const [currentLine, setCurrentLine] = useState<number>(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [onlineCount, setOnlineCount] = useState(108);
   const [showLogin, setShowLogin] = useState(false);
   const [isChatMinimized, setIsChatMinimized] = useState(false);
-  const [loopCount, setLoopCount] = useState(0);
-
-  // Session / countdown
-  const [isLive, setIsLive] = useState(false);
-  const [countdown, setCountdown] = useState("");
-  const [nextLabel, setNextLabel] = useState("");
-  const [nextDay, setNextDay] = useState(new Date().getDay());
+  const [isStarted, setIsStarted] = useState(false);
+  const [loginPromptShown, setLoginPromptShown] = useState(false);
 
   const day = new Date().getDay();
 
@@ -61,113 +28,144 @@ export default function MeetingRoom() {
       image: "/images/surya_bhagwan.sunday.png",
       deity: "surya",
       chantDuration: 22.496,
-      timings: [
-        [0.000, 5.412],
-        [5.412, 9.875],
-        [9.875, 14.921],
-        [14.921, 22.496],
-      ],
+      timings: [[0.000, 5.412],
+      [5.412, 9.875],
+      [9.875, 14.921],
+      [14.921, 22.496],],
       subtitles: {
-        en: [
-          "Tato Yuddha Parishrantam Samare Chintaya Stitham | Ravanaam Chaagrato Drishtvaa Yuddhaaya Samupasthitam ||1||",
+        en: ["Tato Yuddha Parishrantam Samare Chintaya Stitham | Ravanaam Chaagrato Drishtvaa Yuddhaaya Samupasthitam ||1||",
+
           "daiva taishcha samagamya drashtu mabhya gato ranam |",
           "upagamya bravidramam agastyo bhagavan rishihi || 2",
+
           "rama rama mahabaho shrinu guhyam sanatanam |",
           "yena sarvanarin vatsa samare vijayishyasi || 3",
+
           "aditya-hridayam punyam sarva shatru-vinashanam |",
           "jayavaham japen-nityam akshayyam paramam shivam || 4",
+
           "sarvamangala-mangalyam sarva papa pranashanam |",
           "chintashoka-prashamanam ayurvardhana-muttamam || 5",
+
           "rashmi mantam samudyantam devasura-namaskritam |",
           "pujayasva vivasvantam bhaskaram bhuvaneshvaram || 6",
+
           "sarva devatmako hyesha tejasvi rashmi-bhavanah |",
           "esha devasura gananlokan pati gabhastibhih || 7",
+
           "esha brahma cha vishnush cha shivah skandah prajapatihi |",
           "mahendro dhanadah kalo yamah somo hyapam patihi || 8",
+
           "pitaro vasavah sadhya hyashvinau maruto manuh |",
           "vayurvahnih praja-prana ritukarta prabhakarah || 9",
+
           "adityah savita suryah khagah pusha gabhastiman |",
           "suvarnasadrisho bhanur-hiranyareta divakarah || 10",
+
           "haridashvah sahasrarchih saptasapti-marichiman |",
           "timironmathanah shambhu-stvashta martanda amshuman || 11",
+
           "hiranyagarbhah shishira stapano bhaskaro ravihi |",
           "agni garbho'diteh putrah shankhah shishira nashanaha || 12",
+
           "vyomanathastamobhedi rigyajussamaparagaha |",
           "ghanavrishtirapam mitro vindhya-vithiplavangamaha || 13",
+
           "atapi mandali mrityuh pingalah sarvatapanaha |",
           "kavirvishvo mahatejah raktah sarva bhavodbhavaha || 14",
+
           "nakshatra grahataranam-adhipo vishva-bhavanah |",
           "tejasamapi tejasvi dvadashatman namo'stu te || 15",
+
           "namah purvaya giraye pashchimayadraye namah|",
           "jyotirgananam pataye dinaadhipataye namah || 16",
+
           "Jayaya jaya bhadraya haryashvaya namo namah |",
           "namo namah sahasramsho adityaya namo namah || 17",
+
           "nama ugraya viraya sarangaya namo namah |",
           "namah padma prabodhaya martandaya namo namah || 18",
+
           "brahmeshanachyuteshaya suryayadityavarchase |",
           "bhasvate sarva bhakshaya raudraya vapushe namaha || 19",
+
           "tamoghnaya himaghnaya shatrughnayamitatmane |",
           "kritaghnaghnaya devaya jyotisham pataye namaha || 20",
+
           "taptacami karabhaya vahnaye vishvakarmane |",
           "namastamo'bhinighnaya ravaye (rucaye) lokasakshine || 21",
+
           "nashayat yesha vai bhutam tadeva srijati prabhuh|",
           "payatyesha tapatyesha varshatyesha gabhastibhih || 22",
+
           "esha supteshu jagarti bhuteshu parinishthitaha |",
           "esha evagnihotram cha phalam chaivagnihotrinam || 23",
+
           "vedashcha kratavashcaiva kratunam phalam eva cha |",
           "yani krityani lokeshu sarva esha ravih prabhuh || 24",
+
           "ena-mapatsu krichchreshu kantareshu bhayeshu cha |",
           "kirtayan purushah kashchinnavasidati raghava || 25",
+
           "pujayasvaina-mekagro devadevam jagatpatim |",
           "etat trigunitam japtva yuddheshu vijayishyasi || 26",
+
           "asmin kshane mahabaho ravanam tvam vadhishyasi |",
           "evamuktva tada'gastyo jagama cha yathagatam || 27",
+
           "etachchrutva mahateja nashtashoko'bhavattada |",
           "dharayamasa suprito raghavah prayatatmavan || 28",
+
           "adityam prekshya japtva tu param harshamavaptavan |",
           "trirachamya shuchirbhutva dhanuradaya viryavan || 29",
+
           "ravanam prekshya hrishtatma yuddhaya samupagamat |",
           "sarvayatnena mahata vadhe tasya dhrito'bhavat || 30",
+
           "atha ravi-ravadan-nirikshya ramam",
           "mudita manah paramam prahrishyamanaha |",
           "nishicharapati-sankshayam viditva",
           "suragana-madhyagato vachastvareti || 31",
-          "Ityarshe Srimadramayana Valmikye Adikavye Yudhkande Panchadhik Shattamaah Sargaah ll",
+          "Ityarshe Srimadramayana Valmikye Adikavye Yudhkande Panchadhik Shattamaah Sargaah ll"
         ],
-        hi: [
-          "ततो युद्धपरिश्रान्तं समरे चिन्तया स्थितम्‌ । रावणं चाग्रतो दृष्ट्वा युद्धाय समुपस्थितम्‌ ॥1॥",
+        hi: ["ततो युद्धपरिश्रान्तं समरे चिन्तया स्थितम्‌ । रावणं चाग्रतो दृष्ट्वा युद्धाय समुपस्थितम्‌ ॥1॥",
           "दैवतैश्च समागम्य द्रष्टुमभ्यागतो रणम्‌ । उपगम्याब्रवीद् राममगस्त्यो भगवांस्तदा ॥2॥",
           "राम राम महाबाहो श्रृणु गुह्मं सनातनम्‌ । येन सर्वानरीन्‌ वत्स समरे विजयिष्यसे ॥3॥",
           "आदित्यहृदयं पुण्यं सर्वशत्रुविनाशनम्‌ । जयावहं जपं नित्यमक्षयं परमं शिवम्‌ ॥4॥",
           "सर्वमंगलमागल्यं सर्वपापप्रणाशनम्‌ । चिन्ताशोकप्रशमनमायुर्वर्धनमुत्तमम्‌ ॥5॥",
+
           "रश्मिमन्तं समुद्यन्तं देवासुरनमस्कृतम्‌ । पुजयस्व विवस्वन्तं भास्करं भुवनेश्वरम्‌ ॥6॥",
           "सर्वदेवात्मको ह्येष तेजस्वी रश्मिभावन: । एष देवासुरगणांल्लोकान्‌ पाति गभस्तिभि: ॥7॥",
           "एष ब्रह्मा च विष्णुश्च शिव: स्कन्द: प्रजापति: । महेन्द्रो धनद: कालो यम: सोमो ह्यापां पतिः ॥8॥",
           "पितरो वसव: साध्या अश्विनौ मरुतो मनु: । वायुर्वहिन: प्रजा प्राण ऋतुकर्ता प्रभाकर: ॥9॥",
           "आदित्य: सविता सूर्य: खग: पूषा गभस्तिमान्‌ । सुवर्णसदृशो भानुर्हिरण्यरेता दिवाकर: ॥10॥",
+
           "हरिदश्व: सहस्त्रार्चि: सप्तसप्तिर्मरीचिमान्‌ । तिमिरोन्मथन: शम्भुस्त्वष्टा मार्तण्डकोंऽशुमान्‌ ॥11॥",
           "हिरण्यगर्भ: शिशिरस्तपनोऽहस्करो रवि: । अग्निगर्भोऽदिते: पुत्रः शंखः शिशिरनाशन: ॥12॥",
           "व्योमनाथस्तमोभेदी ऋग्यजु:सामपारग: । घनवृष्टिरपां मित्रो विन्ध्यवीथीप्लवंगमः ॥13॥",
           "आतपी मण्डली मृत्यु: पिगंल: सर्वतापन:। कविर्विश्वो महातेजा: रक्त:सर्वभवोद् भव: ॥14॥",
           "नक्षत्रग्रहताराणामधिपो विश्वभावन: । तेजसामपि तेजस्वी द्वादशात्मन्‌ नमोऽस्तु ते ॥15॥",
+
           "नम: पूर्वाय गिरये पश्चिमायाद्रये नम: । ज्योतिर्गणानां पतये दिनाधिपतये नम: ॥16॥",
           "जयाय जयभद्राय हर्यश्वाय नमो नम: । नमो नम: सहस्त्रांशो आदित्याय नमो नम: ॥17॥",
           "नम उग्राय वीराय सारंगाय नमो नम: । नम: पद्मप्रबोधाय प्रचण्डाय नमोऽस्तु ते ॥18॥",
           "ब्रह्मेशानाच्युतेशाय सुरायादित्यवर्चसे । भास्वते सर्वभक्षाय रौद्राय वपुषे नम: ॥19॥",
           "तमोघ्नाय हिमघ्नाय शत्रुघ्नायामितात्मने । कृतघ्नघ्नाय देवाय ज्योतिषां पतये नम: ॥20॥",
+
           "तप्तचामीकराभाय हरये विश्वकर्मणे । नमस्तमोऽभिनिघ्नाय रुचये लोकसाक्षिणे ॥21॥",
           "नाशयत्येष वै भूतं तमेष सृजति प्रभु: । पायत्येष तपत्येष वर्षत्येष गभस्तिभि: ॥22॥",
           "एष सुप्तेषु जागर्ति भूतेषु परिनिष्ठित: । एष चैवाग्निहोत्रं च फलं चैवाग्निहोत्रिणाम्‌ ॥23॥",
           "देवाश्च क्रतवश्चैव क्रतुनां फलमेव च । यानि कृत्यानि लोकेषु सर्वेषु परमं प्रभु: ॥24॥",
           "एनमापत्सु कृच्छ्रेषु कान्तारेषु भयेषु च । कीर्तयन्‌ पुरुष: कश्चिन्नावसीदति राघव ॥25॥",
+
           "पूजयस्वैनमेकाग्रो देवदेवं जगप्ततिम्‌ । एतत्त्रिगुणितं जप्त्वा युद्धेषु विजयिष्यसि ॥26॥",
           "अस्मिन्‌ क्षणे महाबाहो रावणं त्वं जहिष्यसि । एवमुक्ता ततोऽगस्त्यो जगाम स यथागतम्‌ ॥27॥",
           "एतच्छ्रुत्वा महातेजा नष्टशोकोऽभवत्‌ तदा ॥ धारयामास सुप्रीतो राघव प्रयतात्मवान्‌ ॥28॥",
           "आदित्यं प्रेक्ष्य जप्त्वेदं परं हर्षमवाप्तवान्‌ । त्रिराचम्य शूचिर्भूत्वा धनुरादाय वीर्यवान्‌ ॥29॥",
           "रावणं प्रेक्ष्य हृष्टात्मा जयार्थं समुपागतम्‌ । सर्वयत्नेन महता वृतस्तस्य वधेऽभवत्‌ ॥30॥",
           "अथ रविरवदन्निरीक्ष्य रामं मुदितमना: परमं प्रहृष्यमाण: । निशिचरपतिसंक्षयं विदित्वा सुरगणमध्यगतो वचस्त्वरेति ॥31॥",
-          "इत्यर्षे श्रीमद्रमयाने वाल्मिक्ये आदिकाव्ये युद्धकाण्डे पञ्चाधिक शततमः सर्गः ॥",
-        ],
+
+          "इत्यर्षे श्रीमद्रमयाने वाल्मिक्ये आदिकाव्ये युद्धकाण्डे पञ्चाधिक शततमः सर्गः ॥]"],
       },
     },
     1: {
@@ -199,10 +197,29 @@ export default function MeetingRoom() {
       deity: "hanuman",
       chantDuration: 24.236,
       timings: [
-        [0.000, 5.783],
-        [5.783, 10.211],
-        [10.211, 15.982],
-        [15.982, 24.236],
+        [0.000, 6.460], [6.460, 12.930], [12.930, 19.390], [19.390, 25.850],
+        [25.850, 32.310], [32.310, 38.780], [38.780, 45.240], [45.240, 51.700],
+        [51.700, 58.170], [58.170, 64.630], [64.630, 71.090], [71.090, 77.560],
+        [77.560, 84.020], [84.020, 90.480], [90.480, 96.950], [96.950, 103.410],
+        [103.410, 109.870], [109.870, 116.340], [116.340, 122.800], [122.800, 129.260],
+        [129.260, 135.730], [135.730, 142.190], [142.190, 148.650], [148.650, 155.120],
+        [155.120, 161.580], [161.580, 168.040], [168.040, 174.510], [174.510, 180.970],
+        [180.970, 187.430], [187.430, 193.900], [193.900, 200.360], [200.360, 206.820],
+        [206.820, 213.290], [213.290, 219.750], [219.750, 226.210], [226.210, 232.680],
+        [232.680, 239.140], [239.140, 245.600], [245.600, 252.070], [252.070, 258.530],
+        [258.530, 264.990], [264.990, 271.460], [271.460, 277.920], [277.920, 284.380],
+        [284.380, 290.850], [290.850, 297.310], [297.310, 303.770], [303.770, 310.240],
+        [310.240, 316.700], [316.700, 323.160], [323.160, 329.630], [329.630, 336.090],
+        [336.090, 342.550], [342.550, 349.020], [349.020, 355.480], [355.480, 361.940],
+        [361.940, 368.410], [368.410, 374.870], [374.870, 381.330], [381.330, 387.800],
+        [387.800, 394.260], [394.260, 400.720], [400.720, 407.190], [407.190, 413.650],
+        [413.650, 420.110], [420.110, 426.580], [426.580, 433.040], [433.040, 439.500],
+        [439.500, 445.970], [445.970, 452.430], [452.430, 458.890], [458.890, 465.360],
+        [465.360, 471.820], [471.820, 478.280], [478.280, 484.750], [484.750, 491.210],
+        [491.210, 497.670], [497.670, 504.140], [504.140, 510.600], [510.600, 517.060],
+        [517.060, 523.530], [523.530, 529.990], [529.990, 536.450], [536.450, 542.920],
+        [542.920, 549.380], [549.380, 555.840], [555.840, 562.310], [562.310, 568.770],
+        [568.770, 575.200], [575.200, 580.000]
       ],
       subtitles: {
         en: [
@@ -214,88 +231,129 @@ export default function MeetingRoom() {
           "Sumirowpavanakumara",
           "Bala-budheevidyadehoomohee",
           "Harahukaleshabikaara",
+
           "JaiHanumangyangunsagar",
           "JaiKapistihunlokujagar|| 1 ||",
+
           "Ramdootatulitbaldhama",
           "Anjaani-putraPavansutnama|| 2 ||",
+
           "MahabirBikramBajrangi",
           "KumatinivarsumatiKesangi|| 3 ||",
+
           "Kanchan baran birajsubesa",
           "KananKundalKunchitKesha|| 4 ||",
+
           "HathBajraAurDhvajaViraje",
           "Kaandhemoonjjaneusajai|| 5 ||",
+
           "SankarsuvankesariNandan",
           "Tejprataapmahajagbandan|| 6 ||",
+
           "Bidyavaanguniatichaatur",
           "Ramkajkaribekoaatur|| 7 ||",
+
           "Prabhucharitrasunibe-korasiya",
           "RamLakhanSitamanBasiya|| 8 ||",
+
           "SukshmaroopdhariSiyahidikhava",
           "Bikatroopdharilankajarava|| 9 ||",
+
           "Bhimaroopdhariasursanhare",
           "Ramachandrakekajsanvare|| 10 ||",
+
           "LayeSanjivanLakhanJiyaye",
           "ShriRaghubirHarashiurlaye|| 11 ||",
+
           "RaghupatiKinhibahutbadai",
           "TummampriyBharat-hi-sambhai|| 12 ||",
+
           "Sahasbadantumharojasgaavai",
           "Asa-kahiShripatikanthlagaavai|| 13 ||",
+
           "SanakadhikBrahmaadiMuneesa",
           "Narad-SaradsahitAheesa|| 14 ||",
+
           "JamaKuberDigpaalJahante",
           "Kavikovidkahisakekahante|| 15 ||",
+
           "TumupkarSugreevahinkeenha",
           "Rammilayerajpaddeenha|| 16 ||",
+
           "TumharomantraBibheeshanmaana",
           "LankeshwarBhayeSub jagjana|| 17 ||",
+
           "JugsahasrajojanparBhanu",
           "Leelyotahimadhurphaljanu|| 18 ||",
+
           "Prabhumudrikamelimukhmahee",
           "Jaladhilanghigayeachrajnahee|| 19 ||",
+
           "Durgaamkajjagathkejete",
           "Sugamanugrahatumhretete|| 20 ||",
+
           "Ramduaaretumrakhvare",
           "Hoatnaagyabinupaisare|| 21 ||",
+
           "Subsukhlahaetumharisarna",
           "Tumracchakkahukodarnaa|| 22 ||",
+
           "Aapantejsamharoaapai",
           "Teenhonlokhanktekanpai|| 23 ||",
+
           "BhootpisaachNikatnahinaavai",
           "Mahavirjabnaamsunavae|| 24 ||",
+
           "Nasaerogharaesabpeera",
           "JapatnirantarHanumantbeera|| 25 ||",
+
           "SankatseHanumanchudavae",
           "ManKrambachandhyanjolavai|| 26 ||",
+
           "Sabpar Ramtapasveeraja",
           "TinkekajsakalTumsaja|| 27 ||",
+
           "Aurmanorathjokoilavai",
           "Sohiamitjeevanphalpavai|| 28 ||",
+
           "Charonjugpartaptumhara",
           "Haipersidhjagatujiyara|| 29 ||",
+
           "SadhuSantketumRakhware",
           "AsurnikandanRamdulhare|| 30 ||",
+
           "Ashta-sidhinavnidhikedata",
           "As-baradeenJanakimata|| 31 ||",
+
           "Ramrasayantumharepasa",
           "SadarahoRaghupatikedasa|| 32 ||",
+
           "TumharebhajanRamkopavai",
           "Janam-janamkedukhbisraavai|| 33 ||",
+
           "Anth-kaalRaghubarpurjayee",
           "JahanjanamHari-BakhtKahayee|| 34 ||",
+
           "AurDevtaChitnadharehi",
           "Hanumatse hisarvesukhkarehi|| 35 ||",
+
           "Sankatkate-mitesabpeera",
           "JosumiraiHanumatBalbeera|| 36 ||",
+
           "Jai Jai JaiHanumanGosain",
           "KripaKarahuGurudevkinain|| 37 ||",
+
           "Jo sat bar pathkarekohi",
           "Chutahibandhimahasukhhohi|| 38 ||",
+
           "Jo yahpadhaeHanumanChalisa",
           "HoyesiddhisaakhiGaureesa|| 39 ||",
+
           "Tulsidassadaharichera",
           "KeejaiNathHridayemaheindera|| 40 ||",
+
           "PavanTanaySankatHarana,MangalaMuratiRoop|",
-          "RamLakhanaSitaSahita,HridayBasahuSoorBhoop|",
+          "RamLakhanaSitaSahita,HridayBasahuSoorBhoop|"
         ],
         hi: [
           "श्रीगुरु चरन सरोज रज, निज मनु मुकुरु सुधारि।",
@@ -329,23 +387,30 @@ export default function MeetingRoom() {
       image: "/images/lordganesh.wednesday.jpg",
       deity: "ganesh",
       chantDuration: 25.182,
-      timings: [
+      timings: [// Chant 1
         [0.000, 5.821],
         [5.821, 9.968],
         [9.968, 15.082],
         [15.082, 25.182],
+
+        // Chant 2
         [25.182, 31.003],
         [31.003, 35.150],
         [35.150, 40.264],
         [40.264, 50.364],
+
+        // Chant 3
         [50.364, 56.185],
         [56.185, 60.332],
         [60.332, 65.446],
         [65.446, 75.546],
+
+        // Chant 4
         [75.546, 81.367],
         [81.367, 85.514],
         [85.514, 90.628],
-        [90.628, 100.728],
+        [90.628, 100.728]
+
       ],
       subtitles: {
         en: [
@@ -473,10 +538,10 @@ export default function MeetingRoom() {
       deity: "gayatri",
       chantDuration: 14.050,
       timings: [
-        [0.000, 3.900],
-        [3.900, 7.575],
-        [7.575, 11.050],
-        [11.050, 14.595],
+        [0.000, 3.900], // ॐ भूर्भुवः स्वः
+        [3.900, 7.575], // तत्सवितुर्वरेण्यं
+        [7.575, 11.050], // भर्गो देवस्य धीमहि
+        [11.050, 14.595], // धियो यो नः प्रचोदयात्
       ],
       subtitles: {
         en: [
@@ -500,47 +565,18 @@ export default function MeetingRoom() {
       deity: "kalabhairav",
       chantDuration: 245.333,
       timings: [
-        [0.000, 4.145],
-        [4.145, 8.430],
-        [8.430, 12.350],
-        [12.350, 15.450],
-        [15.450, 21.560],
-        [21.560, 27.795],
-        [27.795, 34.755],
-        [34.755, 40.580],
-        [40.580, 43.245],
-        [43.245, 48.530],
-        [48.530, 53.720],
-        [53.720, 58.900],
-        [58.900, 64.080],
-        [64.080, 69.235],
-        [69.235, 74.365],
-        [74.365, 79.645],
-        [79.645, 85.470],
-        [85.470, 91.565],
-        [91.565, 97.895],
-        [97.895, 104.970],
-        [104.970, 111.875],
-        [111.875, 117.685],
-        [117.685, 121.575],
-        [121.575, 128.050],
-        [128.050, 133.885],
-        [133.885, 139.940],
-        [139.940, 145.620],
-        [145.620, 152.905],
-        [152.905, 160.880],
-        [160.880, 169.705],
-        [169.705, 176.435],
-        [176.435, 183.595],
-        [183.595, 190.705],
-        [190.705, 197.165],
-        [197.165, 204.320],
-        [204.320, 208.605],
-        [208.605, 217.900],
-        [217.900, 226.530],
-        [226.530, 232.780],
-        [232.780, 238.655],
-        [238.655, 245.333],
+        [0.000, 6.800],   // 00:00.00 Om Kalabhairavaai namah
+        [6.800, 13.600],  // 00:06.80 Om Kalabhairavaai namah
+        [13.600, 20.440], // 00:13.60 Om Kalabhairavaai namah
+        [20.440, 44.000], // 00:20.44 Verse 1
+        [44.000, 67.500], // 00:44.00 Verse 2
+        [67.500, 91.000], // 01:07.50 Verse 3
+        [91.000, 114.500],// 01:31.00 Verse 4
+        [114.500, 138.000],// 01:54.50 Verse 5
+        [138.000, 161.500],// 02:18.00 Verse 6
+        [161.500, 185.000],// 02:41.50 Verse 7
+        [185.000, 208.500],// 03:05.00 Verse 8
+        [208.500, 245.333] // 03:28.50 Verse 9 + Outro
       ],
       subtitles: {
         en: [
@@ -561,15 +597,15 @@ export default function MeetingRoom() {
           "ॐ कलाभैरवई नमः",
           "ॐ कलाभैरवई नमः",
           "ॐ कलाभैरवई नमः",
-          "देवराज सेव्यमान पावनाङ्घ्रि पङ्कजंव्यालयज्ञ सूत्रमिन्दु शेखरं कृपाकरम् नारदादि योगिवृन्द वन्दितं दिगंबरंकाशिका पुराधिनाथ कालभैरवं भजे॥ १॥ ",
-          "भानुकोटि भास्वरं भवाब्धितारकं परंनीलकण्ठम् ईप्सितार्थ दायकं त्रिलोचनम् ।कालकालम् अंबुजाक्षम् अक्षशूलम् अक्षरंकाशिका पुराधिनाथ कालभैरवं भजे॥२॥ ",
-          "शूलटङ्क पाशदण्ड पाणिमादि कारणंश्यामकायम् आदिदेवम् अक्षरं निरामयम् ।भीमविक्रमं प्रभुं विचित्रताण्डवप्रियंकाशिका पुराधिनाथ कालभैरवं भजे ॥३॥ ",
-          "भुक्तिमुक्तिदायकं प्रशस्तचारुविग्रहंभक्तवत्सलं स्थितं समस्तलोकविग्रहम् ।विनिक्वणन् मनोज्ञहेमकिङ्किणी लसत्कटिंकाशिका पुराधिनाथ कालभैरवं भजे ॥४॥ ",
-          "धर्मसेतुपालकं त्वधर्ममार्गनाशकंकर्मपाश मोचकं सुशर्मदायकं विभुम् ।स्वर्णवर्णशेषपाश शोभिताङ्गमण्डलंकाशिका पुराधिनाथ कालभैरवं भजे ॥ ५॥ ",
-          "रत्नपादुका प्रभाभिराम पादयुग्मकंनित्यम् अद्वितीयम् इष्टदैवतं निरञ्जनम् ।मृत्युदर्पनाशनं कराळदंष्ट्रमोक्षणंकाशिका पुराधिनाथ कालभैरवं भजे ॥६॥ ",
-          "अट्टहास भिन्नपद्मजाण्डकोश सन्ततिंदृष्टिपातनष्टपाप जालमुग्रशासनम् ।अष्टसिद्धिदायकं कपाल मालिकन्धरंकाशिका पुराधिनाथ कालभैरवं भजे ॥७॥ ",
-          "भूतसङ्घनायकं विशालकीर्तिदायकंकाशिवासलोक पुण्यपापशोधकं विभुम् ।नीतिमार्गकोविदं पुरातनं जगत्पतिंकाशिका पुराधिनाथ कालभैरवं भजे ॥८॥ ",
-          "कालभैरवाष्टकं पठन्ति ये मनोहरंज्ञानमुक्तिसाधनं विचित्रपुण्यवर्धनम् ।शोक मोह दैन्य लोभ कोप ताप नाशनंते प्रयान्ति कालभैरवाङ्घ्रि सन्निधिं ध्रुवम् ॥९॥ ",
+          "देवराज सेव्यमान पावनाङ्घ्रि पङ्कजंव्यालयज्ञ सूत्रमिन्दु शेखरं कृपाकरम् नारदादि योगिवृन्द वन्दितं दिगंबरंकाशिका पुराधिनाथ कालभैरवं भजे॥ १॥ ",
+          "भानुकोटि भास्वरं भवाब्धितारकं परंनीलकण्ठम् ईप्सितार्थ दायकं त्रिलोचनम् ।कालकालम् अंबुजाक्षम् अक्षशूलम् अक्षरंकाशिका पुराधिनाथ कालभैरवं भजे॥२॥ ",
+          "शूलटङ्क पाशदण्ड पाणिमादि कारणंश्यामकायम् आदिदेवम् अक्षरं निरामयम् ।भीमविक्रमं प्रभुं विचित्रताण्डवप्रियंकाशिका पुराधिनाथ कालभैरवं भजे ॥३॥ ",
+          "भुक्तिमुक्तिदायकं प्रशस्तचारुविग्रहंभक्तवत्सलं स्थितं समस्तलोकविग्रहम् ।विनिक्वणन् मनोज्ञहेमकिङ्किणी लसत्कटिंकाशिका पुराधिनाथ कालभैरवं भजे ॥४॥ ",
+          "धर्मसेतुपालकं त्वधर्ममार्गनाशकंकर्मपाश मोचकं सुशर्मदायकं विभुम् ।स्वर्णवर्णशेषपाश शोभिताङ्गमण्डलंकाशिका पुराधिनाथ कालभैरवं भजे ॥ ५॥ ",
+          "रत्नपादुका प्रभाभिराम पादयुग्मकंनित्यम् अद्वितीयम् इष्टदैवतं निरञ्जनम् ।मृत्युदर्पनाशनं कराळदंष्ट्रमोक्षणंकाशिका पुराधिनाथ कालभैरवं भजे ॥६॥ ",
+          "अट्टहास भिन्नपद्मजाण्डकोश सन्ततिंदृष्टिपातनष्टपाप जालमुग्रशासनम् ।अष्टसिद्धिदायकं कपाल मालिकन्धरंकाशिका पुराधिनाथ कालभैरवं भजे ॥७॥ ",
+          "भूतसङ्घनायकं विशालकीर्तिदायकंकाशिवासलोक पुण्यपापशोधकं विभुम् ।नीतिमार्गकोविदं पुरातनं जगत्पतिंकाशिका पुराधिनाथ कालभैरवं भजे ॥८॥ ",
+          "कालभैरवाष्टकं पठन्ति ये मनोहरंज्ञानमुक्तिसाधनं विचित्रपुण्यवर्धनम् ।शोक मोह दैन्य लोभ कोप ताप नाशनंते प्रयान्ति कालभैरवाङ्घ्रि सन्निधिं ध्रुवम् ॥९॥ ",
         ],
       },
     },
@@ -577,56 +613,59 @@ export default function MeetingRoom() {
 
   const todayMantra = mantras[day] || mantras[0];
 
-  // ── 1. Wall-clock tick — master driver ────────────────────────────────────
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
   useEffect(() => {
-    const tick = () => {
-      const state = getSessionState();
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
-      if (state.live) {
-        setIsLive(true);
-        const audio = audioRef.current;
-        if (!audio) return;
+  // 🔢 Dynamic Online Count
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setOnlineCount((prev) => Math.max(90, prev + (Math.random() > 0.5 ? 1 : -1)));
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
-        const sessionKey = `${day}-${state.session}`;
-        const fileDur = todayMantra.chantDuration * 108;
-        const target = state.elapsed % fileDur;
+  // 🔊 Autoplay Audio
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-        if (sessionRef.current !== sessionKey) {
-          // New session: load audio and seek to wall-clock position
-          sessionRef.current = sessionKey;
-          audio.src = todayMantra.audio;
-          audio.loop = true;
-          audio.load();
-          audio.currentTime = target;
-          audio.volume = 1;
-          audio.play().catch(() => { });
-        } else if (audio.paused) {
-          // User rejoins mid-session
-          audio.currentTime = target;
-          audio.play().catch(() => { });
-        } else if (Math.abs(audio.currentTime - target) > 3) {
-          // Silent drift correction
-          audio.currentTime = target;
+    const handleEnded = () => {
+      setChantCount((prev) => {
+        const next = prev + 1;
+
+        if (next < 108) {
+          audio.currentTime = 0;
+          audio.play();
         }
-      } else {
-        setIsLive(false);
-        setCountdown(fmtTime(state.secondsToNext));
-        setNextLabel(state.nextLabel);
-        setNextDay(state.nextDay);
 
-        if (audioRef.current && !audioRef.current.paused) {
-          audioRef.current.pause();
-          sessionRef.current = "";
-        }
-      }
+        return next;
+      });
     };
 
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [todayMantra, day]);
+    audio.addEventListener("ended", handleEnded);
 
-  // ── 2. rAF subtitle + chant counter sync ──────────────────────────────────
+    return () => {
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, []);
+
+  // 🔥 Smooth Sync (No Lag)
+
   useEffect(() => {
     let frame: number;
     let lastTime = 0;
@@ -642,31 +681,26 @@ export default function MeetingRoom() {
       const currentTime = audio.currentTime;
       const offset = todayMantra.syncOffset || 0;
       const adjustedTime = Math.max(0, currentTime - offset);
-      const chantDuration = todayMantra.chantDuration;
-      const timeInsideChant = adjustedTime % chantDuration;
 
-      // Detect loop snap
-      if (currentTime < lastTime - 1) {
-        setLoopCount(prev => prev + 1);
-        console.log("[MeetingRoom] Audio looped. Total loops:", loopCount + 1);
-      }
+
       lastTime = currentTime;
 
-      // Chant count from wall clock (authoritative)
-      const state = getSessionState();
-      if (state.live) {
-        setChantCount(Math.min(Math.floor(state.elapsed / chantDuration), 108));
-      }
+      const chantDuration = todayMantra.chantDuration;
 
-      // Lyric line
+      const timeInsideChant = adjustedTime % chantDuration;
+
+
       let lineIndex = -1;
+
       for (let i = 0; i < todayMantra.timings.length; i++) {
         const [start, end] = todayMantra.timings[i];
+
         if (timeInsideChant >= start && timeInsideChant < end) {
           lineIndex = i;
           break;
         }
       }
+
 
       setCurrentLine(lineIndex);
 
@@ -674,7 +708,7 @@ export default function MeetingRoom() {
         console.log("[MeetingRoom] Sync Debug:", {
           currentTime: currentTime.toFixed(2),
           adjustedTime: adjustedTime.toFixed(2),
-          text: todayMantra.subtitles[language][lineIndex],
+          text: todayMantra.subtitles[language][lineIndex]
         });
         lastLine.current = lineIndex;
       }
@@ -684,55 +718,34 @@ export default function MeetingRoom() {
 
     frame = requestAnimationFrame(sync);
     return () => cancelAnimationFrame(frame);
-  }, [todayMantra, loopCount, language]);
+  }, [todayMantra, language]);
 
-  // ── 3. Dynamic online count ────────────────────────────────────────────────
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setOnlineCount(prev => prev + (Math.random() > 0.5 ? 1 : -1));
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // ── 4. Fullscreen ──────────────────────────────────────────────────────────
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      containerRef.current?.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  };
+  // 🚪 Show Login Form after 5 chants
 
   useEffect(() => {
-    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  }, []);
-
-  // ── 5. Login gate — show only ONCE after 5 chants ─────────────────────────
-  useEffect(() => {
-    if (chantCount >= 5 && !loginShown.current) {
-      loginShown.current = true;
+    if (chantCount >= 5 && !loginPromptShown) {
       setShowLogin(true);
-      audioRef.current?.pause();
-    }
-  }, [chantCount]);
+      setLoginPromptShown(true);
 
-  const handleCloseLogin = () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    }
+  }, [chantCount, loginPromptShown]);
+
+  // ▶ Continue chanting without login
+  const continueChanting = () => {
     setShowLogin(false);
-    audioRef.current?.play().catch(() => { });
+
+    if (audioRef.current) {
+      audioRef.current.play();
+    }
   };
 
-  // Derived
-  const nextMantra = mantras[nextDay] || mantras[0];
-
-  // ── JSX ───────────────────────────────────────────────────────────────────
   return (
     <div ref={containerRef} className="flex flex-col h-[100dvh] bg-background overflow-hidden selection:bg-saffron/30 relative">
 
-      {/* TOP BAR */}
+      {/* TOP BAR - Glass Style */}
       <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-white/5 bg-black/40 backdrop-blur-md z-50">
         <div className="flex items-center gap-3 md:gap-5">
           <div className="relative group">
@@ -756,17 +769,10 @@ export default function MeetingRoom() {
         </div>
 
         <div className="flex items-center gap-3 md:gap-4">
-          {isLive ? (
-            <span className="inline-flex items-center gap-1.5 text-[10px] md:text-xs font-bold bg-destructive/10 text-destructive border border-destructive/20 px-3 py-1 rounded-full uppercase tracking-wider">
-              <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-destructive animate-pulse" />
-              LIVE
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 text-[10px] md:text-xs font-bold bg-white/5 text-white/50 border border-white/10 px-3 py-1 rounded-full">
-              <Clock className="w-3 h-3 text-saffron" />
-              {countdown}
-            </span>
-          )}
+          <span className="inline-flex items-center gap-1.5 text-[10px] md:text-xs font-bold bg-destructive/10 text-destructive border border-destructive/20 px-3 py-1 rounded-full uppercase tracking-wider">
+            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-destructive animate-pulse" />
+            LIVE
+          </span>
           <button
             onClick={() => setIsChatMinimized(!isChatMinimized)}
             className={`p-2 rounded-xl transition-all hidden md:block border ${isChatMinimized ? "bg-primary text-white border-primary shadow-[0_0_15px_rgba(255,165,0,0.4)]" : "hover:bg-white/10 border-white/5"}`}
@@ -779,19 +785,24 @@ export default function MeetingRoom() {
 
       {/* MAIN CONTENT */}
       <div className="flex flex-1 overflow-hidden relative">
+
+        {/* Mantra Section */}
         <div className="flex flex-col flex-1 relative overflow-hidden">
 
-          {/* Background Image with Ken Burns */}
+          {/* Background Image with Ken Burns Effect */}
           <div
             className="absolute inset-0 bg-contain bg-center bg-no-repeat animate-ken-burns scale-105"
             style={{ backgroundImage: `url(${todayMantra.image})` }}
           />
           <div className="absolute inset-0 bg-black/60 md:bg-black/30 backdrop-brightness-75" />
+
+          {/* Subtle Ambient Vignette */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
 
+          {/* Foreground Content */}
           <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-4 md:px-12">
 
-            {/* Chant Counter */}
+            {/* Chant Counting Ring/Capsule */}
             <div className="mt-6 md:mt-10 relative group scale-90 md:scale-100">
               <div className="absolute -inset-1 bg-gradient-to-r from-saffron to-temple-gold rounded-full blur opacity-25 group-hover:opacity-50 transition duration-500" />
               <div className="relative flex items-center gap-3 bg-black/60 backdrop-blur-xl px-6 py-2.5 rounded-full border border-white/20 shadow-2xl">
@@ -801,11 +812,11 @@ export default function MeetingRoom() {
                   <span className="text-white/40 mx-2">/</span>
                   108 CHANTS
                 </span>
-                {isLive && <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-ping" />}
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-ping" />
               </div>
             </div>
 
-            {/* Mobile Controls */}
+            {/* Mobile View Toggle & Controls Overlay */}
             <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-4 px-6 md:hidden">
               <div className="flex items-center gap-4 bg-black/80 backdrop-blur-2xl p-3 px-6 rounded-3xl border border-white/10 w-full justify-between shadow-2xl">
                 <div className="flex gap-4">
@@ -833,8 +844,9 @@ export default function MeetingRoom() {
               </div>
             </div>
 
-            {/* Desktop Controls */}
+            {/* Desktop Controls - Floating Glass Bar */}
             <div className="mt-8 hidden md:flex gap-10 items-center bg-black/50 backdrop-blur-2xl px-8 py-4 rounded-[2rem] border border-white/10 shadow-2xl scale-95 md:scale-100">
+              {/* Language Toggle */}
               <div className="flex items-center gap-5">
                 <div className="flex items-center gap-2 text-white/40">
                   <Globe className="w-4 h-4" />
@@ -855,29 +867,41 @@ export default function MeetingRoom() {
                   </button>
                 </div>
               </div>
+
+              {/* Volume */}
               <div className="flex items-center gap-5">
                 <div className="flex items-center gap-2 text-white/40">
                   <Volume2 className="w-4 h-4" />
                   <span className="text-[10px] font-black uppercase tracking-widest">Volume</span>
                 </div>
-                <input
-                  type="range" min="0" max="1" step="0.05" defaultValue="1"
-                  className="w-40 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-primary"
-                  onChange={(e) => { if (audioRef.current) audioRef.current.volume = Number(e.target.value); }}
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    defaultValue="1"
+                    className="w-40 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-primary group"
+                    onChange={(e) => {
+                      if (audioRef.current) {
+                        audioRef.current.volume = Number(e.target.value);
+                      }
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Chat Sidebar */}
+        {/* Chat Sidebar (Desktop) - Improved UI */}
         {!isChatMinimized && (
           <div className="w-[22rem] hidden lg:flex flex-col border-l border-white/5 relative bg-black/20 backdrop-blur-3xl animate-in slide-in-from-right duration-500">
             <ChatPanel deity={todayMantra.deity} />
           </div>
         )}
 
-        {/* Mobile Chat */}
+        {/* Mobile Chat Overlay */}
         {isChatOpen && (
           <div className="absolute inset-0 z-[100] flex flex-col bg-background lg:hidden animate-in slide-in-from-bottom duration-500">
             <div className="flex items-center justify-between p-5 border-b border-white/5 bg-black/40 backdrop-blur-xl">
@@ -899,122 +923,89 @@ export default function MeetingRoom() {
         )}
       </div>
 
-      {/* Audio */}
-      <audio ref={audioRef} preload="auto" loop className="hidden" />
+      {/* Audio Element */}
+      <audio ref={audioRef} preload="auto" className="hidden" />
 
-      {/* ── COUNTDOWN OVERLAY (session not live) ── */}
-      {!isLive && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/92 backdrop-blur-3xl animate-in fade-in duration-700">
-          <div className="text-center p-8 max-w-lg w-full flex flex-col items-center">
-
-            {/* Next session deity image */}
-            <div className="relative w-44 h-44 rounded-full mb-6 overflow-hidden border-2 border-saffron/50 shadow-[0_0_60px_rgba(255,153,51,0.3)]">
-              <img src={nextMantra.image} alt="upcoming deity" className="w-full h-full object-cover object-top scale-110" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            </div>
-
-            <p className="text-saffron text-[10px] font-black uppercase tracking-[0.4em] mb-2">Upcoming Satsang</p>
-            <h2 className="font-display text-2xl md:text-3xl font-black text-white mb-1 tracking-tight">
-              {nextMantra.title}
-            </h2>
-            <p className="text-white/40 text-xs mb-4 font-medium uppercase tracking-widest">{nextLabel}</p>
-
-            <p className="text-saffron/60 text-sm font-sanskrit italic mb-8 px-4 leading-relaxed">
-              {nextMantra.subtitles.hi[0]}
-            </p>
-
-            <div className="inline-flex items-center gap-4 bg-black/70 backdrop-blur-xl px-8 py-5 rounded-2xl border border-saffron/20 shadow-2xl mb-6">
-              <Clock className="w-5 h-5 text-saffron animate-pulse flex-shrink-0" />
-              <span className="font-display text-4xl md:text-5xl font-black text-white tracking-[0.15em] tabular-nums">
-                {countdown}
-              </span>
-            </div>
-
-            <p className="text-white/25 text-[10px] tracking-widest uppercase">
-              Aarti at 6:00 AM – 8:00 AM &amp; 6:00 PM – 8:00 PM daily
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ── LOGIN OVERLAY ── */}
+      {/* Premium Login Form Overlay */}
       {showLogin && (
-        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-500">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-500">
           <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+
           <div className="relative w-full max-w-md glass-card p-8 md:p-10 border-saffron/30 shadow-[0_0_50px_rgba(255,153,51,0.2)] animate-in zoom-in slide-in-from-bottom-8 duration-700">
-
-            {/* X Close — resumes audio */}
-            <button
-              onClick={handleCloseLogin}
-              className="absolute top-4 right-4 p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white transition-all z-10"
-              title="Continue Aarti"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
+            {/* Decorative Top Ornament */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-saffron rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,153,51,0.5)] border-4 border-black/40">
               <span className="text-4xl">🕉️</span>
             </div>
 
             <div className="text-center mt-6 mb-8">
-              <h2 className="font-display text-3xl md:text-4xl font-black text-gradient-saffron mb-3">Join our Parivaar</h2>
+              <h2 className="font-display text-3xl md:text-4xl font-black text-gradient-saffron mb-3">
+                Join our Parivaar
+              </h2>
               <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
                 Aapne 5 chants poore kar liye hain! <br />
                 Aage badhne ke liye kripya Naman Darshan mein login karein.
               </p>
-            </div>
+            </div><div className="space-y-6">
 
-            <div className="space-y-6">
+              {/* Continue Chanting */}
+              <button
+                onClick={continueChanting}
+                className="w-full bg-white/10 border border-white/20 text-white font-display font-bold py-4 rounded-xl hover:bg-white/20 transition-all"
+              >
+                🙏 Continue Chanting as Guest
+              </button>
+
+              {/* Login Button */}
               <button
                 onClick={() => window.location.href = "https://namandarshan.com/login"}
                 className="w-full bg-primary text-primary-foreground font-display font-black text-xl py-5 rounded-2xl shadow-[0_10px_40px_rgba(255,153,51,0.3)] hover:scale-[1.03] active:scale-95 transition-all duration-300 relative overflow-hidden group"
               >
-                <span className="relative z-10 flex items-center justify-center gap-3">🛕 LOGIN WITH NAMAN DARSHAN</span>
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  🛕 LOGIN WITH NAMAN DARSHAN
+                </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
               </button>
 
-              <div className="relative flex items-center justify-center py-2">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10" /></div>
-                <span className="relative bg-[#1A1A1A] px-4 text-[10px] uppercase tracking-[0.3em] text-white/40 font-bold">Or continue with</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => window.location.href = "https://namandarshan.com/login"}
-                  className="bg-white/5 border border-white/10 py-3 rounded-xl hover:bg-white/10 transition-colors text-xs font-bold tracking-widest uppercase"
-                >
-                  Google
-                </button>
-                <button
-                  onClick={() => window.location.href = "https://namandarshan.com/login"}
-                  className="bg-white/5 border border-white/10 py-3 rounded-xl hover:bg-white/10 transition-colors text-xs font-bold tracking-widest uppercase"
-                >
-                  Mobile
-                </button>
-              </div>
-
-              {/* Continue without login */}
-              <button
-                onClick={handleCloseLogin}
-                className="w-full text-center text-xs text-white/40 hover:text-saffron transition-colors duration-200 pt-2 font-medium tracking-wide"
-              >
-                🕉️ Continue Aarti without login
-              </button>
-
-              <p className="text-center text-[10px] text-muted-foreground/60 leading-relaxed">
-                By continuing, you agree to join the global Naman Darshan parivaar and receive spiritual updates.
-              </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* VLC Subtitles */}
+      {/* Start Session Overlay (Audio Unblocker) */}
+      {!isStarted && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-3xl animate-in fade-in duration-700">
+          <div className="text-center p-8 max-w-lg">
+            <div className="w-32 h-32 bg-saffron/20 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-saffron animate-pulse">
+              <span className="text-6xl">🕉️</span>
+            </div>
+            <h2 className="font-display text-4xl font-black text-white mb-4 tracking-tight">Ready for Satsang?</h2>
+            <p className="text-white/60 mb-10 leading-relaxed font-medium">Click below to start the spiritual journey and enable the divine audio experience.</p>
+            <button
+              onClick={() => {
+                setIsStarted(true);
+
+                if (audioRef.current) {
+                  audioRef.current.src = todayMantra.audio;
+                  audioRef.current.play();
+                }
+              }}
+              className="px-12 py-5 bg-saffron text-white font-display font-black text-xl rounded-2xl shadow-[0_10px_40px_rgba(255,153,51,0.4)] hover:scale-105 active:scale-95 transition-all duration-300"
+            >
+              START SPIRITUAL SESSION
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* VLC-Style Bottom Subtitles */}
       <div className="fixed bottom-12 left-0 right-0 z-[150] flex flex-col items-center pointer-events-none px-6 mb-safe">
-        {isLive && currentLine !== -1 && (
-          <div key={currentLine} className="animate-in fade-in slide-in-from-bottom-1 duration-200 text-center">
-            <div className="bg-black/60 backdrop-blur-md px-8 py-3 rounded-xl border border-white/10 shadow-2xl">
-              <p className="font-sanskrit text-2xl md:text-4xl font-bold tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+        {currentLine !== -1 && isStarted && (
+          <div
+            key={currentLine}
+            className="animate-in fade-in slide-in-from-bottom-1 duration-200 text-center"
+          >
+            <div className="bg-black/60 backdrop-blur-md px-8 py-3 rounded-xl border border-white/10 shadow-2xl max-w-3xl">
+              <p className="font-sanskrit text-lg md:text-2xl font-bold tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 <span className="bg-gradient-to-r from-temple-gold via-white to-temple-gold bg-clip-text text-transparent">
                   {todayMantra.subtitles[language][currentLine]}
                 </span>
