@@ -1,9 +1,54 @@
 import { useEffect, useRef, useState } from "react";
 import namanLogo from "@/assets/naman-logo.webp";
 import ChatPanel from "@/components/ChatPanel";
+import { useNavigate } from "react-router-dom";
 import { Maximize, Minimize, Volume2, Globe, MessageSquare, X, Users } from "lucide-react";
+// 🔥 Calculate live satsang progress
+const getLiveSatsangProgress = (chantDuration: number) => {
+  const now = new Date();
 
+  const morningStart = new Date();
+  morningStart.setHours(6, 0, 0, 0);
+
+  const eveningStart = new Date();
+  eveningStart.setHours(18, 0, 0, 0);
+
+  let startTime: Date | null = null;
+
+  if (now >= morningStart && now < new Date(morningStart.getTime() + 2 * 60 * 60 * 1000)) {
+    startTime = morningStart;
+  }
+  else if (now >= eveningStart && now < new Date(eveningStart.getTime() + 2 * 60 * 60 * 1000)) {
+    startTime = eveningStart;
+  }
+
+  if (!startTime) {
+    return {
+      completed: 0,
+      remaining: 108,
+      audioPosition: 0
+    };
+  }
+
+  const elapsedSeconds =
+    (now.getTime() - startTime.getTime()) / 1000;
+
+  const chantNumber = Math.floor(elapsedSeconds / chantDuration);
+
+  const completed = Math.min(chantNumber, 108);
+  const remaining = Math.max(108 - completed, 0);
+
+  const audioPosition = elapsedSeconds % chantDuration;
+
+  return {
+    completed,
+    remaining,
+    audioPosition
+  };
+};
 export default function MeetingRoom() {
+
+  const navigate = useNavigate();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const lastLine = useRef<number>(-1);
@@ -19,9 +64,36 @@ export default function MeetingRoom() {
   const [isStarted, setIsStarted] = useState(false);
   const [loginPromptShown, setLoginPromptShown] = useState(false);
 
-  const day = new Date().getDay();
 
+  const day = new Date().getDay();
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const currentTime = hours + minutes / 60;
+
+  const isMorning = currentTime >= 6 && currentTime < 8;
+  const isEvening = currentTime >= 18 && currentTime < 20;
+
+  useEffect(() => {
+    if (!isMorning && !isEvening) {
+      let message = "";
+
+      if (currentTime < 6) {
+        message = "Satsang begins at 6:00 AM.";
+      }
+      else if (currentTime >= 8 && currentTime < 18) {
+        message = "Satsang begins at 6:00 PM.";
+      }
+      else if (currentTime >= 20) {
+        message = "Today's satsang is completed. Please join tomorrow at 6:00 AM.";
+      }
+
+      alert(message);
+      navigate("/");
+    }
+  }, []);
   const mantras: Record<number, any> = {
+
     0: {
       title: "☀️ Surya Bhagwan Mantra (Daily Jaap)",
       audio: "/audio/sunday.mp3",
@@ -174,10 +246,10 @@ export default function MeetingRoom() {
       image: "/images/lordshiva.monday.jpg",
       deity: "shiva",
       chantDuration: 20.6,
-      timings: [[3.2, 6.5], [7.2, 9.4], [10.0, 12.4], [12.8, 19.8]],
+      timings: [[3.0, 7.0], [7.0, 9.8], [9.8, 12.6], [12.6, 20.6]],
       subtitles: {
         en: [
-          "Om Tryambakam Yajamahe",
+          "Tryambakam Yajamahe",
           "Sugandhim Pushtivardhanam",
           "Urvarukamiva Bandhanan",
           "Mrityor Mukshiya Maamritat",
@@ -491,30 +563,28 @@ export default function MeetingRoom() {
       audio: "/audio/thursday.mp3",
       image: "/images/gurubrihaspati.thursday.png",
       deity: "guru",
-      chantDuration: 65.0,
+      chantDuration: 160.0,
       syncOffset: 0,
       timings: [
-        [0, 4.8],
-        [4.9, 10.2],
-        [10.2, 16.2],
-        [16.2, 22.0],
-        [22.1, 32.0],
-        [32.1, 48.0],
-        [48.1, 53.1],
-        [53.1, 60.0],
-        [60.1, 65.0],
+        [1.82, 5.60], [5.60, 9.40], [9.40, 15.28], [15.28, 25.92], [25.92, 36.56],
+        [36.56, 66.01], [66.01, 103.84], [103.84, 114.92], [114.92, 125.60],
+        [125.60, 136.17], [136.17, 146.55], [146.55, 154.80], [154.80, 160.00]
       ],
       subtitles: {
         en: [
-          "Shri Ganeshaya Namah",
-          "Gurur Brihaspatir Jivah",
-          "Suracharyo Vidambarah",
-          "Vagisho Dhishano Dirghashmashruh Pitambaro Yuva",
-          "Sudhadrishti Grahaadhisho Grahapeedapaharakah",
-          "Dayakara Saumyamoorti Surarchita Kunkumadyutih",
-          "Lokapujyo Lokaguruh",
-          "meitigno meitikarakah",
-          "tarapatischangirsvah Vedavidyapitamah",
+          "Shri Ganeshayanam,",
+          "Guru Brihas Patil Jeevam,",
+          "Suracharyo Vidambarakam",
+          "Vaheesho, Dheeshano, Dheerghasma, Shukhu, Peethambaram Yuvam",
+          "Sudha Drishtihi, Graha Dheesho, Graha Peedha Paharakaha",
+          "Dayagarah, Saumya Murthihi, Surarchaha, Kumkumadhyuthihi  Lokapujyo, Lokadurukhu, Nidhikyo, Nidhikarakaha",
+          "Tara Patishankhi Raso, Veda Vaidya Peetha Magadha",
+          "Bhaktya Brihas Patil Smritva Namaanye Daliya Pateti",
+          "Arogi, Balavan, Sriman, Putravan, Sabave Naraka",
+          "Jeevet Varshashatam Matyo, Paapam Nashyati Nashyati",
+          "Yath Poojayethi, Guru Dinam Peetha Gandhakshatam Baraihi",
+          "Pushpati Kopakareshcha, Poojayithwa Brihas Patil",
+          "Brahmanand, Bhojayithwacha, Peetha Shantir, Bhavedhuroga"
         ],
         hi: [
           "श्री गणेशाय नमः",
@@ -646,7 +716,7 @@ export default function MeetingRoom() {
 
     const handleEnded = () => {
       setChantCount((prev) => {
-        const next = prev + 1;
+        const next = Math.min(prev + 1, 108);
 
         if (next < 108) {
           audio.currentTime = 0;
@@ -810,7 +880,10 @@ export default function MeetingRoom() {
                 <span className="text-sm md:text-lg font-black tracking-widest text-white decoration-primary underline-offset-8 decoration-2">
                   <span className="text-primary">{chantCount}</span>
                   <span className="text-white/40 mx-2">/</span>
-                  108 CHANTS
+                  108
+                  <span className="text-xs ml-3 text-white/60">
+                    ({108 - chantCount} remaining)
+                  </span>
                 </span>
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full animate-ping" />
               </div>
@@ -983,19 +1056,34 @@ export default function MeetingRoom() {
             <button
               onClick={() => {
                 setIsStarted(true);
+                if (!audioRef.current) return;
+                const audio = audioRef.current;
+                const progress = getLiveSatsangProgress(todayMantra.chantDuration);
 
-                if (audioRef.current) {
-                  audioRef.current.src = todayMantra.audio;
-                  audioRef.current.play();
+                if (progress.completed >= 108) {
+                  alert("Today's satsang is completed.");
+                  navigate("/");
+                  return;
                 }
+                // load audio
+                audio.src = todayMantra.audio;
+                // jump to correct LIVE position
+                audio.currentTime = progress.audioPosition;
+                // set chant progress
+                setChantCount(progress.completed);
+
+                audio.play();
               }}
+
+
               className="px-12 py-5 bg-saffron text-white font-display font-black text-xl rounded-2xl shadow-[0_10px_40px_rgba(255,153,51,0.4)] hover:scale-105 active:scale-95 transition-all duration-300"
             >
               START SPIRITUAL SESSION
             </button>
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* VLC-Style Bottom Subtitles */}
       <div className="fixed bottom-12 left-0 right-0 z-[150] flex flex-col items-center pointer-events-none px-6 mb-safe">
@@ -1014,6 +1102,6 @@ export default function MeetingRoom() {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 }

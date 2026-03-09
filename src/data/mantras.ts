@@ -95,10 +95,10 @@ export const mantras: Record<number, any> = {
         image: "/images/lordshiva.monday.jpg",
         deity: "shiva",
         chantDuration: 20.6,
-        timings: [[3.2, 6.5], [7.2, 9.4], [10.0, 12.4], [12.8, 19.8]],
+        timings: [[3.0, 7.0], [7.0, 9.8], [9.8, 12.6], [12.6, 20.6]],
         subtitles: {
             en: [
-                "Om Tryambakam Yajamahe",
+                "Tryambakam Yajamahe",
                 "Sugandhim Pushtivardhanam",
                 "Urvarukamiva Bandhanan",
                 "Mrityor Mukshiya Maamritat",
@@ -224,18 +224,43 @@ export const mantras: Record<number, any> = {
         audio: "/audio/thursday.mp3",
         image: "/images/gurubrihaspati.thursday.png",
         deity: "guru",
-        chantDuration: 65.0,
+        chantDuration: 160.0,
         syncOffset: 0,
-        timings: [[0, 4.8], [4.9, 10.2], [10.2, 16.2], [16.2, 22.0], [22.1, 32.0], [32.1, 48.0], [48.1, 53.1], [53.1, 60.0], [60.1, 65.0]],
+        timings: [
+            [1.82, 5.60], [5.60, 9.40], [9.40, 15.28], [15.28, 25.92], [25.92, 36.56],
+            [36.56, 66.01], [66.01, 103.84], [103.84, 114.92], [114.92, 125.60],
+            [125.60, 136.17], [136.17, 146.55], [146.55, 154.80], [154.80, 160.00]
+        ],
         subtitles: {
             en: [
-                "Shri Ganeshaya Namah", "Gurur Brihaspatir Jivah", "Suracharyo Vidambarah", "Vagisho Dhishano Dirghashmashruh Pitambaro Yuva",
-                "Sudhadrishti Grahaadhisho Grahapeedapaharakah", "Dayakara Saumyamoorti Surarchita Kunkumadyutih", "Lokapujyo Lokaguruh", "meitigno meitikarakah",
-                "tarapatischangirsvah Vedavidyapitamah",
+                "Shri Ganeshayanam,",
+                "Guru Brihas Patil Jeevam,",
+                "Suracharyo Vidambarakam",
+                "Vaheesho, Dheeshano, Dheerghasma, Shukhu, Peethambaram Yuvam",
+                "Sudha Drishtihi, Graha Dheesho, Graha Peedha Paharakaha",
+                "Dayagarah, Saumya Murthihi, Surarchaha, Kumkumadhyuthihi  Lokapujyo, Lokadurukhu, Nidhikyo, Nidhikarakaha",
+                "Tara Patishankhi Raso, Veda Vaidya Peetha Magadha",
+                "Bhaktya Brihas Patil Smritva Namaanye Daliya Pateti",
+                "Arogi, Balavan, Sriman, Putravan, Sabave Naraka",
+                "Jeevet Varshashatam Matyo, Paapam Nashyati Nashyati",
+                "Yath Poojayethi, Guru Dinam Peetha Gandhakshatam Baraihi",
+                "Pushpati Kopakareshcha, Poojayithwa Brihas Patil",
+                "Brahmanand, Bhojayithwacha, Peetha Shantir, Bhavedhuroga"
             ],
             hi: [
-                "श्री गणेशाय नमः", "गुरुर बृहस्पतिः जीवः", "सुराचार्यो विदाम्बरः", "वागीशो धिषणो दीर्घश्मश्रुः", "पीताम्बरो युवा सुधादृष्टिः",
-                "ग्रहाधीशो ग्रहपीडापहारकः", "दयाकरः सौम्यमूर्तिः", "सुरार्चितः कुंकुमद्युतिः", "लोकपूज्यो लोकगुरुः", "तारापतिश्च अंगिरसः", "वेदविद्यापितामहः",
+                "श्री गणेशाय नमः",
+                "गुरु बृहस्पतिः जीवः",
+                "सुराचार्यो विदाम्बरः",
+                "वागीशो धीषणो दीर्घश्मश्रुः पीताम्बरो युवा",
+                "सुधादृष्टिः ग्रहाधीशो ग्रहपीडापहारकः",
+                "दयाकरः सौम्यमूर्तिः सुरार्चितः कुंकुमद्युतिः लोकपूज्यो लोकगुरुः नीतिज्ञो नीतिकारकः",
+                "तारापतिश्च अंगिरसः वेदविद्यापितामहः",
+                "भक्त्या बृहस्पतिं स्मृत्वा नामान्येतानि यः पढेत्",
+                "आरोगी बलवान् श्रीमान् पुत्रवान् स भवेत् नरः",
+                "जीवेद् वर्षशतं मार्त्यः पापं नश्यति नश्यति",
+                "यः पूजयेत् गुरु दिने पीतगन्धाक्षताम्बरैः",
+                "पुष्पदीपोपहारैश्च पूजयित्वा बृहस्पतिम्",
+                "ब्राह्मणान् भोजयित्वा च पीडा शान्तिर्भवेद् ध्रुवम्"
             ]
         }
     },
