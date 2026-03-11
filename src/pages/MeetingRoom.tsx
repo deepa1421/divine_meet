@@ -4,7 +4,7 @@ import ChatPanel from "@/components/ChatPanel";
 import { useNavigate } from "react-router-dom";
 import { Maximize, Minimize, Volume2, Globe, MessageSquare, X, Users } from "lucide-react";
 // 🔥 Calculate live satsang progress
-const getLiveSatsangProgress = (chantDuration: number) => {
+const getLiveSatsangProgress = (chantDuration: number, maxTimingDuration: number) => {
   const now = new Date();
 
   const morningStart = new Date();
@@ -38,7 +38,7 @@ const getLiveSatsangProgress = (chantDuration: number) => {
   const completed = Math.min(chantNumber, 108);
   const remaining = Math.max(108 - completed, 0);
 
-  const audioPosition = elapsedSeconds % chantDuration;
+  const audioPosition = elapsedSeconds % maxTimingDuration;
 
   return {
     completed,
@@ -63,6 +63,36 @@ export default function MeetingRoom() {
   const [isChatMinimized, setIsChatMinimized] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const [loginPromptShown, setLoginPromptShown] = useState(false);
+  const [reaction, setReaction] = useState<string | null>(null);
+  const [showReactions, setShowReactions] = useState(false);
+  const [floatingReactions, setFloatingReactions] = useState<{ id: number; emoji: string; left: number }[]>([]);
+  const [customBackgroundVideo, setCustomBackgroundVideo] = useState<string | null>(null);
+
+  const handleReactionClick = (emoji: string) => {
+    setReaction(emoji);
+    setShowReactions(false);
+
+    // Add a floating reaction
+    const id = Date.now() + Math.random();
+    const left = 75 + Math.random() * 20; // Random horizontal position 75% to 95%
+
+    setFloatingReactions((prev) => [...prev, { id, emoji, left }]);
+
+    // Remove after animation completes
+    setTimeout(() => {
+      setFloatingReactions((prev) => prev.filter((r) => r.id !== id));
+    }, 2500);
+  };
+
+  const reactions = [
+    { name: "Om", emoji: "🕉️" },
+    { name: "Shiva", emoji: "🔱" },
+    { name: "Hanuman", emoji: "🐒" },
+    { name: "Ganesh", emoji: "🐘" },
+    { name: "Krishna", emoji: "🪈" },
+    { name: "Ram", emoji: "🏹" },
+    { name: "Namaste", emoji: "🙏" }
+  ];
 
 
   const day = new Date().getDay();
@@ -71,7 +101,7 @@ export default function MeetingRoom() {
   const minutes = now.getMinutes();
   const currentTime = hours + minutes / 60;
 
-  const isMorning = currentTime >= 6 && currentTime < 8;
+  const isMorning = currentTime >= 6 && currentTime < 15;
   const isEvening = currentTime >= 18 && currentTime < 20;
 
   useEffect(() => {
@@ -709,22 +739,26 @@ export default function MeetingRoom() {
     return () => clearInterval(interval);
   }, []);
 
-  // 🔊 Autoplay Audio
+  // 🔊 Chant Counter + Auto Loop until 108
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     const handleEnded = () => {
       setChantCount((prev) => {
-        const next = Math.min(prev + 1, 108);
-
-        if (next < 108) {
-          audio.currentTime = 0;
-          audio.play();
+        if (prev >= 108) {
+          audio.pause();
+          alert("Today's 108 chants are completed. Please join the next satsang.");
+          return prev;
         }
 
-        return next;
+        return prev + 1;
       });
+
+      if (chantCount < 108) {
+        audio.currentTime = 0;
+        audio.play();
+      }
     };
 
     audio.addEventListener("ended", handleEnded);
@@ -732,7 +766,7 @@ export default function MeetingRoom() {
     return () => {
       audio.removeEventListener("ended", handleEnded);
     };
-  }, []);
+  }, [chantCount]);
 
   // 🔥 Smooth Sync (No Lag)
 
@@ -755,9 +789,9 @@ export default function MeetingRoom() {
 
       lastTime = currentTime;
 
-      const chantDuration = todayMantra.chantDuration;
-
-      const timeInsideChant = adjustedTime % chantDuration;
+      // Retrieve max timing so we don't repeat just the first few lines of the text
+      const maxTimingDuration = todayMantra.timings[todayMantra.timings.length - 1][1];
+      const timeInsideChant = adjustedTime % maxTimingDuration;
 
 
       let lineIndex = -1;
@@ -859,12 +893,19 @@ export default function MeetingRoom() {
         {/* Mantra Section */}
         <div className="flex flex-col flex-1 relative overflow-hidden">
 
-          {/* Background Image with Ken Burns Effect */}
-          <div
-            className="absolute inset-0 bg-contain bg-center bg-no-repeat animate-ken-burns scale-105"
-            style={{ backgroundImage: `url(${todayMantra.image})` }}
-          />
-          <div className="absolute inset-0 bg-black/60 md:bg-black/30 backdrop-brightness-75" />
+
+          {/* Background Video */}
+
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            className="absolute inset-0 w-full h-full object-cover opacity-70 z-0"
+          >
+            <source src="/videos/panditJi-video.mp4" type="video/mp4" />
+          </video>
 
           {/* Subtle Ambient Vignette */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
@@ -917,191 +958,122 @@ export default function MeetingRoom() {
               </div>
             </div>
 
-            {/* Desktop Controls - Floating Glass Bar */}
-            <div className="mt-8 hidden md:flex gap-10 items-center bg-black/50 backdrop-blur-2xl px-8 py-4 rounded-[2rem] border border-white/10 shadow-2xl scale-95 md:scale-100">
-              {/* Language Toggle */}
-              <div className="flex items-center gap-5">
-                <div className="flex items-center gap-2 text-white/40">
-                  <Globe className="w-4 h-4" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Language</span>
-                </div>
-                <div className="flex bg-white/5 p-1.5 rounded-2xl border border-white/5">
-                  <button
-                    onClick={() => setLanguage("en")}
-                    className={`px-6 py-2 rounded-xl text-xs font-black tracking-wider transition-all duration-300 ${language === "en" ? "bg-primary text-white shadow-lg scale-[1.05]" : "text-white/40 hover:text-white"}`}
-                  >
-                    ENGLISH
-                  </button>
-                  <button
-                    onClick={() => setLanguage("hi")}
-                    className={`px-6 py-2 rounded-xl text-xs font-black tracking-wider transition-all duration-300 ${language === "hi" ? "bg-primary text-white shadow-lg scale-[1.05]" : "text-white/40 hover:text-white"}`}
-                  >
-                    HINDI
-                  </button>
-                </div>
+            {/* Desktop Controls */}
+            <div className="mt-8 hidden md:flex gap-6 items-center bg-black/50 backdrop-blur-2xl px-8 py-4 rounded-3xl border border-white/10">
+              <div className="flex bg-white/5 p-1 rounded-xl">
+                <button onClick={() => setLanguage("en")} className={`px-4 py-1.5 rounded-lg text-xs font-bold ${language === 'en' ? 'bg-primary text-white' : 'text-white/40'}`}>EN</button>
+                <button onClick={() => setLanguage("hi")} className={`px-4 py-1.5 rounded-lg text-xs font-bold ${language === 'hi' ? 'bg-primary text-white' : 'text-white/40'}`}>HI</button>
               </div>
+              <div className="flex items-center gap-2">
+                <Volume2 size={16} className="text-white/40" />
+                <input type="range" min="0" max="1" step="0.1" onChange={(e) => audioRef.current && (audioRef.current.volume = Number(e.target.value))} className="w-24 accent-primary" />
+              </div>
+              <button onClick={() => setShowReactions(!showReactions)} className="bg-white/10 p-2 rounded-lg text-white">{reaction || "🙏"}</button>
+              {showReactions && (
+                <div className="absolute bottom-20 flex gap-2 bg-black/80 p-2 rounded-xl border border-white/10">
+                  {reactions.map(r => <button key={r.name} onClick={() => handleReactionClick(r.emoji)} className="text-xl hover:scale-125 transition">{r.emoji}</button>)}
+                </div>
+              )}
+            </div>
+          </div>
 
-              {/* Volume */}
-              <div className="flex items-center gap-5">
-                <div className="flex items-center gap-2 text-white/40">
-                  <Volume2 className="w-4 h-4" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Volume</span>
-                </div>
-                <div className="relative flex items-center">
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    defaultValue="1"
-                    className="w-40 h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-primary group"
-                    onChange={(e) => {
-                      if (audioRef.current) {
-                        audioRef.current.volume = Number(e.target.value);
-                      }
-                    }}
-                  />
-                </div>
+          {/* Mobile Footer Overlay */}
+          <div className="absolute bottom-6 left-0 right-0 flex justify-center md:hidden px-6 z-20">
+            <div className="flex items-center justify-between w-full bg-black/80 backdrop-blur-2xl p-4 rounded-2xl border border-white/10">
+              <div className="flex gap-2">
+                <button onClick={() => setLanguage("en")} className={`px-3 py-1 rounded-lg text-xs font-bold ${language === 'en' ? 'bg-primary' : 'bg-white/5'}`}>EN</button>
+                <button onClick={() => setLanguage("hi")} className={`px-3 py-1 rounded-lg text-xs font-bold ${language === 'hi' ? 'bg-primary' : 'bg-white/5'}`}>HI</button>
+              </div>
+              <div className="flex gap-4">
+                <MessageSquare onClick={() => setIsChatOpen(true)} className="text-white/60" />
+                <Maximize onClick={toggleFullscreen} className="text-white/60" />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Chat Sidebar (Desktop) - Improved UI */}
+        {/* Sidebar Chat */}
         {!isChatMinimized && (
-          <div className="w-[22rem] hidden lg:flex flex-col border-l border-white/5 relative bg-black/20 backdrop-blur-3xl animate-in slide-in-from-right duration-500">
+          <div className="w-[350px] hidden lg:flex flex-col border-l border-white/5 bg-black/20 backdrop-blur-3xl">
             <ChatPanel deity={todayMantra.deity} />
           </div>
         )}
-
-        {/* Mobile Chat Overlay */}
-        {isChatOpen && (
-          <div className="absolute inset-0 z-[100] flex flex-col bg-background lg:hidden animate-in slide-in-from-bottom duration-500">
-            <div className="flex items-center justify-between p-5 border-b border-white/5 bg-black/40 backdrop-blur-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
-                <h2 className="font-display font-black tracking-wider text-sm">DEVOTEE CHAT</h2>
-              </div>
-              <button
-                onClick={() => setIsChatOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-xl transition-all border border-white/5 shadow-lg"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <ChatPanel deity={todayMantra.deity} />
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Mobile Chat Overlay */}
+      {isChatOpen && (
+        <div className="fixed inset-0 z-[100] bg-background flex flex-col lg:hidden">
+          <div className="flex items-center justify-between p-4 border-b border-white/10">
+            <span className="font-bold">DEVOTEE CHAT</span>
+            <X onClick={() => setIsChatOpen(false)} />
+          </div>
+          <ChatPanel deity={todayMantra.deity} />
+        </div>
+      )}
 
       {/* Audio Element */}
       <audio ref={audioRef} preload="auto" className="hidden" />
 
-      {/* Premium Login Form Overlay */}
+      {/* Overlays: Login and Start */}
       {showLogin && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-500">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
-
-          <div className="relative w-full max-w-md glass-card p-8 md:p-10 border-saffron/30 shadow-[0_0_50px_rgba(255,153,51,0.2)] animate-in zoom-in slide-in-from-bottom-8 duration-700">
-            {/* Decorative Top Ornament */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-saffron rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,153,51,0.5)] border-4 border-black/40">
-              <span className="text-4xl">🕉️</span>
-            </div>
-
-            <div className="text-center mt-6 mb-8">
-              <h2 className="font-display text-3xl md:text-4xl font-black text-gradient-saffron mb-3">
-                Join our Parivaar
-              </h2>
-              <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-                Aapne 5 chants poore kar liye hain! <br />
-                Aage badhne ke liye kripya Naman Darshan mein login karein.
-              </p>
-            </div><div className="space-y-6">
-
-              {/* Continue Chanting */}
-              <button
-                onClick={continueChanting}
-                className="w-full bg-white/10 border border-white/20 text-white font-display font-bold py-4 rounded-xl hover:bg-white/20 transition-all"
-              >
-                🙏 Continue Chanting as Guest
-              </button>
-
-              {/* Login Button */}
-              <button
-                onClick={() => window.location.href = "https://namandarshan.com/login"}
-                className="w-full bg-primary text-primary-foreground font-display font-black text-xl py-5 rounded-2xl shadow-[0_10px_40px_rgba(255,153,51,0.3)] hover:scale-[1.03] active:scale-95 transition-all duration-300 relative overflow-hidden group"
-              >
-                <span className="relative z-10 flex items-center justify-center gap-3">
-                  🛕 LOGIN WITH NAMAN DARSHAN
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-              </button>
-
-            </div>
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-neutral-900 border border-saffron/30 p-8 rounded-3xl max-w-sm text-center">
+            <h2 className="text-2xl font-bold text-primary mb-4">Join our Parivaar</h2>
+            <p className="text-sm text-white/60 mb-6">Aapne 5 chants poore kar liye hain! Login to continue.</p>
+            <button onClick={continueChanting} className="w-full py-3 mb-3 bg-white/10 rounded-xl">Continue as Guest</button>
+            <button onClick={() => window.location.href = "https://namandarshan.com/login"} className="w-full py-3 bg-primary text-black font-bold rounded-xl">LOGIN NOW</button>
           </div>
         </div>
       )}
 
-      {/* Start Session Overlay (Audio Unblocker) */}
       {!isStarted && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-3xl animate-in fade-in duration-700">
-          <div className="text-center p-8 max-w-lg">
-            <div className="w-32 h-32 bg-saffron/20 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-saffron animate-pulse">
-              <span className="text-6xl">🕉️</span>
-            </div>
-            <h2 className="font-display text-4xl font-black text-white mb-4 tracking-tight">Ready for Satsang?</h2>
-            <p className="text-white/60 mb-10 leading-relaxed font-medium">Click below to start the spiritual journey and enable the divine audio experience.</p>
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/95 backdrop-blur-3xl">
+          <div className="text-center">
+            <div className="text-6xl mb-6 animate-pulse">🕉️</div>
+            <h2 className="text-2xl font-bold mb-8">Ready for Satsang?</h2>
             <button
               onClick={() => {
                 setIsStarted(true);
-                if (!audioRef.current) return;
-                const audio = audioRef.current;
-                const progress = getLiveSatsangProgress(todayMantra.chantDuration);
-
-                if (progress.completed >= 108) {
-                  alert("Today's satsang is completed.");
-                  navigate("/");
-                  return;
+                const maxTiming = todayMantra.timings[todayMantra.timings.length - 1][1];
+                const progress = getLiveSatsangProgress(todayMantra.chantDuration, maxTiming);
+                if (audioRef.current) {
+                  audioRef.current.src = todayMantra.audio;
+                  audioRef.current.currentTime = progress.audioPosition;
+                  setChantCount(progress.completed);
+                  audioRef.current.play();
                 }
-                // load audio
-                audio.src = todayMantra.audio;
-                // jump to correct LIVE position
-                audio.currentTime = progress.audioPosition;
-                // set chant progress
-                setChantCount(progress.completed);
-
-                audio.play();
               }}
-
-
-              className="px-12 py-5 bg-saffron text-white font-display font-black text-xl rounded-2xl shadow-[0_10px_40px_rgba(255,153,51,0.4)] hover:scale-105 active:scale-95 transition-all duration-300"
+              className="px-8 py-4 bg-saffron text-white rounded-2xl font-bold text-lg shadow-2xl"
             >
-              START SPIRITUAL SESSION
+              START SESSION
             </button>
           </div>
         </div>
-      )
-      }
+      )}
 
-      {/* VLC-Style Bottom Subtitles */}
-      <div className="fixed bottom-12 left-0 right-0 z-[150] flex flex-col items-center pointer-events-none px-6 mb-safe">
-        {currentLine !== -1 && isStarted && (
-          <div
-            key={currentLine}
-            className="animate-in fade-in slide-in-from-bottom-1 duration-200 text-center"
-          >
-            <div className="bg-black/60 backdrop-blur-md px-8 py-3 rounded-xl border border-white/10 shadow-2xl max-w-3xl">
-              <p className="font-sanskrit text-lg md:text-2xl font-bold tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                <span className="bg-gradient-to-r from-temple-gold via-white to-temple-gold bg-clip-text text-transparent">
-                  {todayMantra.subtitles[language][currentLine]}
-                </span>
-              </p>
-            </div>
+      {/* Subtitles Overlay */}
+      <div className="fixed bottom-24 md:bottom-12 left-0 right-0 z-[50] flex justify-center pointer-events-none px-6">
+        {isStarted && currentLine !== -1 && todayMantra.subtitles[language][currentLine] && (
+          <div className="bg-black/60 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10 shadow-2xl max-w-2xl text-center">
+            <p className="text-lg md:text-2xl font-bold text-white leading-tight">
+              {todayMantra.subtitles[language][currentLine]}
+            </p>
           </div>
         )}
       </div>
-    </div >
+
+      {/* Floating Reactions */}
+      <div className="fixed inset-0 pointer-events-none z-[150] overflow-hidden">
+        {floatingReactions.map((r) => (
+          <div
+            key={r.id}
+            className="absolute bottom-24 text-4xl animate-float-up opacity-0"
+            style={{ left: `${r.left}%` }}
+          >
+            {r.emoji}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

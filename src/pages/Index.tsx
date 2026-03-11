@@ -104,14 +104,14 @@ export default function Index() {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-temple-gradient overflow-hidden px-4 sm:px-6">
-
+      
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-saffron/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-temple-gold/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-saffron/10 rounded-full blur-[120px] animate-pulse pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-temple-gold/10 rounded-full blur-[120px] animate-pulse pointer-events-none" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center w-full max-w-md sm:max-w-xl lg:max-w-2xl px-6 sm:px-8 py-10 sm:py-12 glass-card text-center">
+      <div className="relative z-20 flex flex-col items-center w-full max-w-md sm:max-w-xl lg:max-w-2xl px-6 sm:px-8 py-10 sm:py-12 glass-card text-center">
 
         {/* Logo */}
         <div className="relative mb-10 group">
@@ -140,7 +140,7 @@ export default function Index() {
         {/* Enter Temple Button */}
         <button
           onClick={handleEnterTemple}
-          className="w-full sm:w-auto bg-primary text-primary-foreground font-display font-black text-lg sm:text-xl px-8 sm:px-12 py-4 sm:py-5 rounded-2xl shadow-2xl hover:scale-105 transition-transform"
+          className="w-full sm:w-auto bg-primary text-primary-foreground font-display font-black text-lg sm:text-xl px-8 sm:px-12 py-4 sm:py-5 rounded-2xl shadow-2xl hover:scale-105 active:scale-95 transition-transform touch-manipulation"
         >
           🛕 Enter the Temple
         </button>

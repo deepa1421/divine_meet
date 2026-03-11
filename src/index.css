@@ -158,6 +158,25 @@
   }
 }
 
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-400px) scale(1);
+  }
+}
+
+.animate-float-up {
+  animation: float-up 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
